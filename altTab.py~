@@ -1,0 +1,3 @@
+frompyautogui import hotkey
+
+hotkey('alt', 'tab')
