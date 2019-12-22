@@ -85,10 +85,10 @@ def connectSerial():
 			if i > 256:									#check for com port limit
 				return (None, None)								#no port opened
 	name = connection.readline()						#read data from the connection
-	name = name.decode()								#decode the message
-	if (data.decode()) == "Moteino\r\n":				#execute on "moteino"
+	name = name								#decode the message
+	if name == "Moteino\r\n":				#execute on "moteino"
 		name = "Moteino"								#set to simpler string
-	elif data.decode() == "CC1101\r\n":					#execute on "cc1101" 
+	elif name == "CC1101\r\n":					#execute on "cc1101" 
 		name = "CC1101"									#set to simpler string
 	else:												#execute for other cases
 		name = None										#no device name given
