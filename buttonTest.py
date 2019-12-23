@@ -1,24 +1,25 @@
 import ArduinoFunctions
 
 connection, name = ArduinoFunctions.connectSerial()
-data = ArduinoFunctions.readSerial(connection, name)
+while(1):
+    data = ArduinoFunctions.readSerial(connection, name)
+    if data is not None:
+        if(0X1 & data):
 
-if(0x1 & data)
+            print("sun ")
 
-    print("sun ")
+        if(0X2 & data):
 
-if(0x2 & data)
+            print("rain ")
 
-    print("rain ")
+        if(0X4 & data):
 
-if(0x4 & data)
+            print("cloud ")
 
-    print("cloud ")
+        if(0X8 & data):
 
-if(0x8 & data)
+            print("snow ")
 
-    print("snow ")
+        if(0X10 & data):
 
-if(0x10 & data)
-
-    print("view ")
+            print("view ")
