@@ -84,12 +84,11 @@ def readSerial(connection, name):
 
 #read a line from the serial connection and convert it from bytes
 def connectSerial():
-    port = "com{}"    #windows: "com{}", linux: "/dev/ttyUSB{}"    #create port string
+    port = "/dev/ttyUSB{}"   #windows: "com{}", linux:     #create port string
     i = 0                                                #create a counter
     while True:                                            #loop forever
         try:                                            #try the following code
             connection = Serial(port.format(i), 9600)    #open serial connection at 9600 baud
-            
             break                                        #break out of the while loop
         except SerialException:                            #catch exception
             i += 1                                        #increment counter
@@ -98,18 +97,16 @@ def connectSerial():
     print("Port opened: " + connection.name)            #print out the message
     while True:                                            #loop forever
         data = connection.readline()                    #read data from the connection
-        print(data)
         try:                                            #try the following code
             data = data.decode()                        #decode the message
         except UnicodeDecodeError:                        #catch decoding error
             continue                                    #go to beginning of loop
-        print(data)                                        #print the message
         if data == "Moteino\r\n":                        #execute on "moteino"
             name = "Moteino"                            #set to simpler string
             break                                        #exit loop
         elif data == "CC1101\r\n":                        #execute on "cc1101" 
             name = "CC1101"                                #set to simpler string
             break                                        #exit loop
-    while connection.readline() != "Good!\r\n":            #wait for 
-        connection.write("■")                            #send 0xFE
+    while connection.readline().decode() != "Good!\r\n":            #wait for
+        connection.write(bytes([254]))                            #send 0xFE
     return (connection, name)                            #return port and device name

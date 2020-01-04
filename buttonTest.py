@@ -1,9 +1,18 @@
-import ArduinoFunctions
+from ArduinoFunctions import *
 
-connection, name = ArduinoFunctions.connectSerial()
+connection, name = connectSerial()
+
+data = readSerial(connection, name)
+data = data.decode()[:-2]
+print(data, end = "")
+
 while(1):
-    data = ArduinoFunctions.readSerial(connection, name)
-    if data is not None:
+    #print("potat")
+    data = readSerial(connection, name)
+    data = data.decode()
+    data = int(data[:-2])
+    print(data, end = "")
+    '''if data is not None:
         if(0X1 & data):
 
             print("sun ")
@@ -23,3 +32,4 @@ while(1):
         if(0X10 & data):
 
             print("view ")
+'''
