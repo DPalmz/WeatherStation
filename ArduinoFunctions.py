@@ -84,7 +84,7 @@ def readSerial(connection, name):
 
 #read a line from the serial connection and convert it from bytes
 def connectSerial():
-    port = "/dev/ttyUSB{}"   #windows: "com{}", linux:     #create port string
+    port = "com{}"   #windows: , linux: "/dev/ttyUSB{}"    #create port string
     i = 0                                                #create a counter
     while True:                                            #loop forever
         try:                                            #try the following code
@@ -97,6 +97,7 @@ def connectSerial():
     print("Port opened: " + connection.name)            #print out the message
     while True:                                            #loop forever
         data = connection.readline()                    #read data from the connection
+        print(data)
         try:                                            #try the following code
             data = data.decode()                        #decode the message
         except UnicodeDecodeError:                        #catch decoding error

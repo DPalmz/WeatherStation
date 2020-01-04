@@ -4,14 +4,14 @@ connection, name = connectSerial()
 
 data = readSerial(connection, name)
 data = data.decode()[:-2]
-print(data, end = "")
+print(data)
 
 while(1):
     #print("potat")
     data = readSerial(connection, name)
     data = data.decode()
     data = int(data[:-2])
-    print(data, end = "")
+    print(data)
     '''if data is not None:
         if(0X1 & data):
 
