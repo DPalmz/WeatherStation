@@ -3,6 +3,7 @@ from ArduinoFunctions import *
 connection, name = connectSerial()
 print("connection made")
 data = readSerial(connection, name)
+
 print(data)
 
 while(1):
