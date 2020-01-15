@@ -10,7 +10,7 @@ MainWindow.geometry("%dx%d+0+0" %(width_value,height_value))
 
 C=Canvas(MainWindow,width= width_value,height=height_value, bg="blue")
 C.pack()
-img=Image.open("BGW.gif").resize((width_value,height_value),Image.ANTIALIAS)
+img=Image.open("D:/Users/Dylan/Documents/git/WeatherStation/BGW.gif").resize((width_value,height_value),Image.ANTIALIAS)
 pic=ImageTk.PhotoImage(img)
 C.create_image(0,-50,image =pic,anchor =NW)
 MainWindow.mainloop()
