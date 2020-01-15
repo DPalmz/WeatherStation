@@ -69,13 +69,13 @@ def getSnow(an, temp, hum):
 def readSerial(connection, name):
     if name == "Moteino":                                #for Moteino connection
         values = []                                        #create an empty list
-        for i in range(5):                                #loop n-1 times for most data
+        for i in range(8):                                #loop n-1 times for most data
             values.append(connection.readline())        #read data from the connection
-            values[i] = values[i].decode()                #translate bytes to string
-            values[i] = int(values[i])                    #convert to int
-        values.append(connection.readline())            #read data from the connection
-        values[i] = values[i].decode()                    #translate bytes to string
-        values[i] = float(values[LAST])                    #convert to float (battery Voltage)
+            values[i] = values[i].decode()                #translate bytes to string            
+            values[i] = float(values[i][:-2])               #convert to int, get rid of \r\n
+        #values.append(connection.readline())            #read data from the connection
+        #values[i] = values[i].decode()                    #translate bytes to string
+        #values[i] = float(values[LAST])                    #convert to float (battery Voltage)
     elif name == "CC1101":                                #for CC1101 connection
         values = connection.readline()                    #read a byte from the connection
     else:                                                #all other cases
@@ -110,4 +110,5 @@ def connectSerial():
             break                                        #exit loop
     while connection.readline().decode() != "Good!\r\n":            #wait for
         connection.write(bytes([254]))                            #send 0xFE
+        print("connection ongoing")  
     return (connection, name)                            #return port and device name
