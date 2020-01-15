@@ -3,6 +3,7 @@ ser = serial.Serial("/dev/ttyUSB0",9600)
 ser.flushInput()
 
 while True:
-    data = ser.readline()
-    print(data)
+    if(ser.in_waiting >0):
+        data = ser.readline()
+        print(data)
 
