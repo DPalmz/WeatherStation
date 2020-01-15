@@ -1,12 +1,12 @@
 from ArduinoFunctions import *
 
 connection, name = connectSerial()
-print("connection made")
-data = readSerial(connection, name)
+
 
 print(data)
 
 while(1):
+    
     data = readSerial(connection, name)
     #data = int(data[:-2])
     print(data)
