@@ -1,7 +1,7 @@
 from ArduinoFunctions import *
 
 connection, name = connectSerial()
-print("connection made")
+print("made connection " + name)
 data = readSerial(connection, name)
 
 print(data)
@@ -10,6 +10,7 @@ while(1):
     data = readSerial(connection, name)
     #data = int(data[:-2])
     print(data)
+    print(data[0])
     '''if data is not None:
         if(0X1 & data):
 
