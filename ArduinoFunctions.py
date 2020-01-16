@@ -80,11 +80,12 @@ def readSerial(connection, name):
         values = connection.readline()                    #read a byte from the connection
     else:                                                #all other cases
         values = None                                    #set to null
+    
     return values                                        #return values
 
 #read a line from the serial connection and convert it from bytes
 def connectSerial():
-    port = "com{}"   #windows: , linux: "/dev/ttyUSB{}"    #create port string
+    port =  "/dev/ttyUSB{}"  #windows: "com{}", linux:     #create port string
     i = 0                                                #create a counter
     while True:                                            #loop forever
         try:                                            #try the following code
@@ -93,8 +94,9 @@ def connectSerial():
         except SerialException:                            #catch exception
             i += 1                                        #increment counter
             if i > 256:                                    #check for com port limit
-                return (None, None)                        #no port opened
+                return ("error", "error")                        #no port opened
     print("Port opened: " + connection.name)            #print out the message
+    connection.flushInput()                             #get rid of anything left over?
     while True:                                            #loop forever
         data = connection.readline()                    #read data from the connection
         print(data)
@@ -108,7 +110,7 @@ def connectSerial():
         elif data == "CC1101\r\n":                        #execute on "cc1101" 
             name = "CC1101"                                #set to simpler string
             break                                        #exit loop
-    while connection.readline().decode() != "Good!\r\n":            #wait for
+    
+    while connection.readline().decode() != "Good!\r\n":                           #wait for
         connection.write(bytes([254]))                            #send 0xFE
-        print("connection ongoing")  
     return (connection, name)                            #return port and device name
