@@ -20,15 +20,15 @@
 #define SERVER_ADDRESS 2
 
 const int pin = 2;
-const int d1 = 3;
-const int d2 = 4;
+const int p1 = 3;
+const int p2 = 4;
 
 
 //unsigned long timing = millis();
 //int32_t timeout = 10000;
 int count = 0;
 int firstTime = 1;
-int d = 0; //delay variable?
+int d = 0; //delay counter
 
 void wakeUp()
 {
@@ -136,9 +136,9 @@ void setup()
   // the CAD timeout to non-zero:
 //  driver.setCADTimeout(10000);
   driver.setFrequency(380);
-  pinMode(pin, OUTPUT);
-  pinMode(d1, INPUT_PULLUP); // Rain gaige
-  pinMode(d2, INPUT_PULLUP); // windspeed
+  pinMode(pin, INPUT_PULLUP);
+  pinMode(p1, INPUT_PULLUP); // Rain gaige
+  pinMode(p2, INPUT_PULLUP); // windspeed
   pinMode(A0, INPUT); // wind direction
   pinMode(A1, INPUT); // battery voltage
   pinMode(A2, INPUT); // photo resistor
@@ -146,8 +146,8 @@ void setup()
   pinMode(A4, INPUT); // sca bme    I2C
   pinMode(A5, INPUT); // scl bme    I2C
 
-  attachPCINT(digitalPinToPCINT(d1), Rain, FALLING);
-  attachPCINT(digitalPinToPCINT(d2), Wind, FALLING);
+  attachPCINT(digitalPinToPCINT(p1), Rain, FALLING);
+  attachPCINT(digitalPinToPCINT(p2), Wind, FALLING);
   
   
 }
@@ -174,65 +174,41 @@ void loop()
   //if (manager.available())
   //{
     
-    rain.n = digitalRead(d1);
-    //spe.n = digitalRead(d2);
     wind.n = analogRead(A0);
     pre.n = analogRead(A3);
-    v.n = 10* analogRead(A1);
+    v.n = analogRead(A1);
     r.n = analogRead(A2);
     temp.n = bme280.getTemperature();
     hum.n=  bme280.getHumidity();
-    Serial.println(temp.n);
-    Serial.println(hum.n);
     count = 1;
     firstTime = 0;
-    //test code//    
-    //temp.n = 82.34;
-    //hum.n = 76;
-    //rain.n = 32;
-    //spe.n = 3;
-    //wind.n = 4;
-    //pre.n = 5;
-    //v.n = 6;
-    //r.n = 7;
-    //----------------//
+
     uint8_t data[] = { rain.b[0], rain.b[1], 
                       temp.b[0], temp.b[1], temp.b[2], temp.b[3],
                       hum.b[0], hum.b[1], hum.b[2], hum.b[3],
                       spe.b[0], spe.b[1], wind.b[0],
                       wind.b[1], pre.b[0], pre.b[1], v.b[0], v.b[1],
                       r.b[0], r.b[1]};
-   // Serial.println(count);
+  
     // Wait for a message addressed to us from the client
     uint8_t len = sizeof(buf);
     uint8_t from;
     if (manager.recvfromAck(buf, &len, &from))
     {
-     // Serial.print("got request from : 0x");
-     // Serial.print(from, HEX);
-     // Serial.print(": ");
-     // Serial.println((char*)buf);
-      
       // Send a reply back to the originator client
       if (!manager.sendtoWait(data, sizeof(data), from))
         Serial.println("sendtoWait failed");
-    }
-
- 
-
-    
-  //}
-
-  //delay(100);
-   
+    }   
 }
 
+//Wind tick intterupt sequence. Delay loop included
 void Wind(void)
 {
   spe.n++;
   while(++d);
 }
 
+//Rain tick interrupt sequence. Delay loop included
 void Rain(void)
 {
   rain.n++;
