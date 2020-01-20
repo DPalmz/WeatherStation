@@ -1,3 +1,5 @@
+
+
 // rf95_reliable_datagram_server.pde
 // -*- mode: C++ -*-
 // Example sketch showing how to create a simple addressed, reliable messaging server
@@ -9,6 +11,7 @@
 #include <RH_RF95.h>
 #include <SPI.h>
 #include <Wire.h>
+#include <PinChangeInterrupt.h>
 
 //#include "rand.h"
 #include "Seeed_BME280.h"
@@ -20,10 +23,12 @@ const int pin = 2;
 const int d1 = 3;
 const int d2 = 4;
 
+
 //unsigned long timing = millis();
 //int32_t timeout = 10000;
 int count = 0;
 int firstTime = 1;
+int d = 0; //delay variable?
 
 void wakeUp()
 {
@@ -108,7 +113,7 @@ void setup()
   // Ensure serial flash is not interfering with radio communication on SPI bus
  // pinMode(4, INPUT);
 //  digitalWrite(4, HIGH);
-  Serial.begin(9600);
+  //Serial.begin(9600);
   //while (!Serial) ; // Wait for serial port to be available
   if (!manager.init())
     Serial.println("init failed");
@@ -132,14 +137,19 @@ void setup()
 //  driver.setCADTimeout(10000);
   driver.setFrequency(380);
   pinMode(pin, OUTPUT);
-  pinMode(d1, INPUT); // Rain gaige
-  pinMode(d2, INPUT); // windspeed
-  pinMode(A0,INPUT); // wind direction
+  pinMode(d1, INPUT_PULLUP); // Rain gaige
+  pinMode(d2, INPUT_PULLUP); // windspeed
+  pinMode(A0, INPUT); // wind direction
   pinMode(A1, INPUT); // battery voltage
   pinMode(A2, INPUT); // photo resistor
   pinMode(A3, INPUT); // precipitation (snow detector)
   pinMode(A4, INPUT); // sca bme    I2C
   pinMode(A5, INPUT); // scl bme    I2C
+
+  attachPCINT(digitalPinToPCINT(d1), Rain, FALLING);
+  attachPCINT(digitalPinToPCINT(d2), Wind, FALLING);
+  
+  
 }
 
 uint8_t data[] = { rain.b[0], rain.b[1], 
@@ -165,7 +175,7 @@ void loop()
   //{
     
     rain.n = digitalRead(d1);
-    spe.n = digitalRead(d2);
+    //spe.n = digitalRead(d2);
     wind.n = analogRead(A0);
     pre.n = analogRead(A3);
     v.n = 10* analogRead(A1);
@@ -179,7 +189,7 @@ void loop()
     //test code//    
     //temp.n = 82.34;
     //hum.n = 76;
-    rain.n = 32;
+    //rain.n = 32;
     //spe.n = 3;
     //wind.n = 4;
     //pre.n = 5;
@@ -188,10 +198,10 @@ void loop()
     //----------------//
     uint8_t data[] = { rain.b[0], rain.b[1], 
                       temp.b[0], temp.b[1], temp.b[2], temp.b[3],
-                      hum.b[0], hum.b[1], hum.b[2], hum.b[3]};//,
-                      //spe.b[0], spe.b[1], wind.b[0],
-                      //wind.b[1], pre.b[0], pre.b[1], v.b[0], v.b[1],
-                      //r.b[0], r.b[1]};
+                      hum.b[0], hum.b[1], hum.b[2], hum.b[3],
+                      spe.b[0], spe.b[1], wind.b[0],
+                      wind.b[1], pre.b[0], pre.b[1], v.b[0], v.b[1],
+                      r.b[0], r.b[1]};
    // Serial.println(count);
     // Wait for a message addressed to us from the client
     uint8_t len = sizeof(buf);
@@ -215,4 +225,16 @@ void loop()
 
   //delay(100);
    
+}
+
+void Wind(void)
+{
+  spe.n++;
+  while(++d);
+}
+
+void Rain(void)
+{
+  rain.n++;
+  while(++d);
 }
