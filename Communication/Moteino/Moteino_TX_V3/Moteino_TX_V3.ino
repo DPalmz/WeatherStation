@@ -86,11 +86,11 @@ void setup()
 //  digitalWrite(4, HIGH);
   
   Serial.begin(9600);
-  /*do{
+  do{
       Serial.println("Moteino");
       blab = Serial.read();
   }while(blab != 0xFE);
-  Serial.println("Good!");*/
+  Serial.println("Good!");
   if (!manager.init())
     Serial.println("init failed");
   // Defaults after init are 434.0MHz, 13dBm, Bw = 125 kHz, Cr = 4/5, Sf = 128chips/symbol, CRC on
@@ -175,7 +175,7 @@ void loop()
        Serial.println(pre.n);
        Serial.println(v.n);
        Serial.println(r.n);
-       Serial.println("");
+       //Serial.println("");
       }
       else
       {
