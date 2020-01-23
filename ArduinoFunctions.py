@@ -84,12 +84,13 @@ def readSerial(connection, name):
     return values                                        #return values
 
 #read a line from the serial connection and convert it from bytes
-def connectSerial():
+def connectSerial(counter):
     port =  "/dev/ttyUSB{}"  #windows: "com{}", linux:     #create port string
-    i = 0                                                #create a counter
+    i = counter                                                #create a counter
     while True:                                            #loop forever
         try:                                            #try the following code
             connection = Serial(port.format(i), 9600)    #open serial connection at 9600 baud
+            
             break                                        #break out of the while loop
         except SerialException:                            #catch exception
             i += 1                                        #increment counter
@@ -110,7 +111,9 @@ def connectSerial():
         elif data == "CC1101\r\n":                        #execute on "cc1101" 
             name = "CC1101"                                #set to simpler string
             break                                        #exit loop
-    
-    while connection.readline().decode() != "Good!\r\n":                           #wait for
+    garbage =  connection.readline().decode()
+    while garbage != "Good!\r\n":                           #wait for
+        print(garbage)
         connection.write(bytes([254]))                            #send 0xFE
+        garbage = connection.readline().decode()
     return (connection, name)                            #return port and device name
