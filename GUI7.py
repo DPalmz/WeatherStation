@@ -29,12 +29,14 @@ btnpress = 0                          #Button Box input and weather condition va
 cnd = 0
 #data1 = 0                             #Data in from weather station and button box (undetermined)
 #data2 = 0
+counter = 0
 #lock = Lock()                         #Lock for multithreading
 
 
 # *** Establish connection
-connection1, name1 = ArduinoFunctions.connectSerial() #open serial ports for button box and weather station
-#connection2, name2 = ArduinoFunctions.connectSerial()
+connection1, name1 = ArduinoFunctions.connectSerial(counter) #open serial ports for button box and weather station
+counter += 1
+connection2, name2 = ArduinoFunctions.connectSerial(counter)
     
     
 # *** Window setup
@@ -193,11 +195,12 @@ def polling(MainWindow):
     global data2
     #lock.acquire()
     data1 = ArduinoFunctions.readSerial(connection1, name1)      # get data from weather station and button box
-    #data2 = ArduinoFunctions.readSerial(connection2, name2)
+    data2 = ArduinoFunctions.readSerial(connection2, name2)
     #lock.release()
     weatherData()             # update weather station data values
     battStat()                                                   # determine image for battery status and weather condition
     weatherStat()
+    buttons()
     #display_date()
     #display_time()
     MainWindow.update()
@@ -257,6 +260,8 @@ def weatherData():
 def buttonData(connection, name):
     if(name=="CC1101"):
             btnpress = ArduinoFunctions.readSerial(connection, name)
+            if(btnpress == 0):
+                btnpress = -1
     else:
             btnpress = 0
     return btnpress
@@ -283,13 +288,15 @@ def buttons():
 
     buttonData(connection1, name1)                  #get button press
     buttonData(connection2, name2)
-
+    
     if(btnpress == cnd):
         correct()
-    elif(btnpress == '10'):
+    elif(btnpress == 10):
         altTab()
-    elif(btnpress == '0'):
-        noRX() 
+    #elif(btnpress == 0):
+     #   noRX() 
+    elif(btnpress == -1):
+        continue
     else:
         incorrect()
     return
