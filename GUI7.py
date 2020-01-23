@@ -7,6 +7,7 @@ import ArduinoFunctions
 import os
 import sys
 import time as tm
+import altTab
 #import weatherData
 
 sys.path.append(os.path.abspath(r"/home/pi/Documents/WeatherStation"))
@@ -260,8 +261,10 @@ def weatherData():
 def buttonData(connection, name):
     if(name=="CC1101"):
             btnpress = ArduinoFunctions.readSerial(connection, name)
-            if(btnpress == 0):
-                btnpress = -1
+            print(btnpress)
+            if(btnpress == '0'):
+                btnpress = '-1'
+                print("bla")
     else:
             btnpress = 0
     return btnpress
@@ -285,18 +288,22 @@ def buttons():
 
     MainWindow.bind('<Button-1>', correct)          #bindings
     MainWindow.bind('<Button-3>', incorrect)
-
-    buttonData(connection1, name1)                  #get button press
-    buttonData(connection2, name2)
     
+    if(name2 == "CC1101"):
+                                             #get button press
+        btnpress = buttonData(connection2, name2)
+    elif(name1 == "CC1101"):
+        btnpress = buttonData(connection1, name1) 
+   
+   
     if(btnpress == cnd):
         correct()
-    elif(btnpress == 10):
-        altTab()
+    elif(btnpress == '10'):
+        altTab
     #elif(btnpress == 0):
      #   noRX() 
-    elif(btnpress == -1):
-        continue
+    elif(btnpress == '-1'):
+        return
     else:
         incorrect()
     return

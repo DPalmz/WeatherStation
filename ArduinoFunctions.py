@@ -78,6 +78,7 @@ def readSerial(connection, name):
         #values[i] = float(values[LAST])                    #convert to float (battery Voltage)
     elif name == "CC1101":                                #for CC1101 connection
         values = connection.readline()                    #read a byte from the connection
+        values = values.decode()[:-2]
     else:                                                #all other cases
         values = None                                    #set to null
     
