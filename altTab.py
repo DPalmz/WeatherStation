@@ -1,4 +1,5 @@
 from pyautogui import hotkey, press
-
-hotkey('alt', 'tab')
-press('enter')
+def altTab():
+    hotkey('alt', 'tab')
+    press('enter')
+    return

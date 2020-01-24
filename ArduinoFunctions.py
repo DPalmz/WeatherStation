@@ -3,7 +3,9 @@ from sys import exit                                #import exit from sys librar
 
 #determine state of battery
 def getBatStatus(an):
-    status = 0
+    status = "0"
+    an = ((an*3.3)/1023)*(680000+220000)/220000
+    print(an)
     if an > 925:
         status = "Overcharged"
     elif an > 872:
@@ -72,7 +74,7 @@ def readSerial(connection, name):
         for i in range(8):                                #loop n-1 times for most data
             values.append(connection.readline())        #read data from the connection
             values[i] = values[i].decode()                #translate bytes to string            
-            values[i] = float(values[i][:-2])               #convert to int, get rid of \r\n
+            values[i] = (values[i][:-2])               #convert to int, get rid of \r\n
         #values.append(connection.readline())            #read data from the connection
         #values[i] = values[i].decode()                    #translate bytes to string
         #values[i] = float(values[LAST])                    #convert to float (battery Voltage)
@@ -82,6 +84,7 @@ def readSerial(connection, name):
     else:                                                #all other cases
         values = None                                    #set to null
     
+    #print(values)
     return values                                        #return values
 
 #read a line from the serial connection and convert it from bytes
@@ -101,7 +104,6 @@ def connectSerial(counter):
     connection.flushInput()                             #get rid of anything left over?
     while True:                                            #loop forever
         data = connection.readline()                    #read data from the connection
-        print(data)
         try:                                            #try the following code
             data = data.decode()                        #decode the message
         except UnicodeDecodeError:                        #catch decoding error
