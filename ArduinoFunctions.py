@@ -4,17 +4,17 @@ from sys import exit                                #import exit from sys librar
 #determine state of battery
 def getBatStatus(an):
     status = "0"
-    an = ((an*3.3)/1023)*(680000+220000)/220000
+    an = (an*(3.3/1023))*(68+22)/22
     print(an)
-    if an > 925:
+    if an > 14.4:
         status = "Overcharged"
-    elif an > 872:
+    elif an > 13:
         status = "100%"
-    elif an > 833:
+    elif an > 12.5:
         status = "80%"
-    elif an > 807:
+    elif an > 12:
         status = "50%"
-    elif an > 763:
+    elif an > 11.4:
         status = "20%"
     else:
         status = "Dead"
@@ -69,22 +69,31 @@ def getSnow(an, temp, hum):
 
 #read a set of values from the arduino
 def readSerial(connection, name):
+    #values = 0
+   
     if name == "Moteino":                                #for Moteino connection
-        values = []                                        #create an empty list
-        for i in range(8):                                #loop n-1 times for most data
-            values.append(connection.readline())        #read data from the connection
-            values[i] = values[i].decode()                #translate bytes to string            
-            values[i] = (values[i][:-2])               #convert to int, get rid of \r\n
+        if(connection.in_waiting>0):                     
+            values = []
+            print("At motino")                   #create an empty list
+            for i in range(8):                                #loop n-1 times for most data
+                values.append(connection.readline())        #read data from the connection
+                values[i] = values[i].decode()                #translate bytes to string            
+                values[i] = (values[i][:-2])               #convert to int, get rid of \r\n
         #values.append(connection.readline())            #read data from the connection
         #values[i] = values[i].decode()                    #translate bytes to string
         #values[i] = float(values[LAST])                    #convert to float (battery Voltage)
+        else:
+            values = ["-1"]     
     elif name == "CC1101":                                #for CC1101 connection
-        values = connection.readline()                    #read a byte from the connection
-        values = values.decode()[:-2]
-    else:                                                #all other cases
-        values = None                                    #set to null
-    
-    #print(values)
+        if(connection.in_waiting>0):                     
+            print("at cc")
+            values = connection.readline()                    #read a byte from the connection
+            values = values.decode()[:-2]
+        #else:                                                #all other cases
+        #    values = None                                    #set to null
+        else:
+            values = -1
+    print("glenn: ",values)
     return values                                        #return values
 
 #read a line from the serial connection and convert it from bytes
@@ -119,4 +128,5 @@ def connectSerial(counter):
         print(garbage)
         connection.write(bytes([254]))                            #send 0xFE
         garbage = connection.readline().decode()
+    #connection.timeout(0)    
     return (connection, name)                            #return port and device name

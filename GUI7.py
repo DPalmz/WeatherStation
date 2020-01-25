@@ -198,25 +198,26 @@ def polling(MainWindow):
     global data1
     global data2
     #lock.acquire()
-    data1 = ArduinoFunctions.readSerial(connection1, name1)      # get data from weather station and button box
-    data2 = ArduinoFunctions.readSerial(connection2, name2)
-    #lock.release()
-    weatherData()             # update weather station data values
-    battStat()                                                   # determine image for battery status and weather condition
-    weatherStat()
-    buttonEvent()
-    #display_date()
-    #display_time()
-    MainWindow.update()
-    #MainWindow.update_idletasks()
-    #polling(MainWindow)
-    print(data1, data2)
-    MainWindow.after(500, polling(MainWindow))                   # poll every 100ms
+    while True:
+        data1 = ArduinoFunctions.readSerial(connection1, name1)      # get data from weather station and button box
+        data2 = ArduinoFunctions.readSerial(connection2, name2)
+        #lock.release()
+        weatherData()             # update weather station data values
+        battStat()                                                   # determine image for battery status and weather condition
+        weatherStat()
+        buttonEvent()
+        #display_date()
+        #display_time()
+        MainWindow.update()
+        #MainWindow.update_idletasks()
+        #polling(MainWindow)
+        print(data1, data2)
+        #polling(MainWindow)                  # poll every 100ms
 
 '''
 threads = []
 for func in [polling(), weatherData()]:
-        threads.append(Thread(target=funct))
+        threads.append(Thread(target=func))
         threads[-1].start()
 thread.join()    
 '''
@@ -225,6 +226,7 @@ thread.join()
 def weatherData():
     
     if(name1=="Moteino"):
+        if (data1[0]!="-1"):
             BATst = ArduinoFunctions.getBatStatus(int(data1[6]))
             #print("Moteino Battery Level: ",BATst)
             hum = int(data1[1])                                                  #humidity
@@ -245,24 +247,28 @@ def weatherData():
             windy_text.set("wind:{}{}{}".format(*windy))
             #rain_text.set("Rain:{}".format(rainy))
             #return
-            '''
-    elif(name2=="Moteino"):
-            BATst = ArduinoFunctions.getBatStatus(data2[6]) 
-            hum = data2[1]                             #humidity
-            photoresistor = data2[7]                                    #photoresistor
-            rainy = ArduinoFunctions.getRainVolume(data2[2])            #precipitation
-            temp = data2[0]                            #temperature
-            precipitation = ArduinoFunctions.getSnow(data2[5], temp, hum)          #snow fall
-            windD = ArduinoFunctions.getWindDirection(data2[4])         #wind direction
-            windSpeed = ArduinoFunctions.getWindSpeed(data2[3])         #wind speed
             
-            windy = (windD,windSpeed,"mi/hr")                           #format for wind output
+    elif(name2=="Moteino"):
+         if (data2[0]!="-1"):
+            BATst = ArduinoFunctions.getBatStatus(int(data2[6]))
+            #print("Moteino Battery Level: ",BATst)
+            hum = int(data2[1])                                                  #humidity
+            photoresistor = int(data2[7])                                        #photoresistor
+            rainy = round(ArduinoFunctions.getRainVolume(int(data2[2])), 0)                #precipitation
+            try:
+                temp = round(float(data2[0]) * 9/5 + 32, 0)                            #temperature converted from C to F, rounded
+            except(ValueError):
+                temp = round(float(data2[0][-4:]) * 9/5 + 32, 0) 
+            precipitation = ArduinoFunctions.getSnow(int(data2[5]), temp, hum)   #snow fall
+            windD = ArduinoFunctions.getWindDirection(int(data2[4]))             #wind direction
+            windSpeed = round(ArduinoFunctions.getWindSpeed(int(data2[3])), 0)   #wind speed
+            
+            windy = (windD,windSpeed,"mi/hr")                               #format for wind output
             
             hum_text.set("Humidity:{}".format(hum))
             temp_text.set("Temperature:{}°F".format(temp))
             windy_text.set("wind:{}{}{}".format(*windy))
-            return
-            '''
+            
             
             
 # *** button box data handling
