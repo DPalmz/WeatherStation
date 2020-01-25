@@ -86,11 +86,11 @@ void setup()
 //  digitalWrite(4, HIGH);
   
   Serial.begin(9600);
-  /*do{
+  do{
       Serial.println("Moteino");
       blab = Serial.read();
   }while(blab != 0xFE);
-  Serial.println("Good!");*/
+  Serial.println("Good!");
   if (!manager.init())
     Serial.println("init failed");
   // Defaults after init are 434.0MHz, 13dBm, Bw = 125 kHz, Cr = 4/5, Sf = 128chips/symbol, CRC on
@@ -118,7 +118,7 @@ uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
 void loop()
 {
   //Serial.println("Sending to rf95_reliable_datagram_server");
-  if (state == 0){  
+  //if (state == 0){  
     // Send a message to manager_server
     if (manager.sendtoWait(data, sizeof(data), SERVER_ADDRESS))
     {
@@ -175,7 +175,7 @@ void loop()
        Serial.println(pre.n);
        Serial.println(v.n);
        Serial.println(r.n);
-       Serial.println("");
+       //Serial.println("");
       }
       else
       {
@@ -186,19 +186,19 @@ void loop()
       Serial.println("sendtoWait failed");
     
     resend = 300000; // 5 min in milliseconds
-    if ((millis() - starttime) > resend){ //needed to use resend differently here
-      state = 1;
+    //if ((millis() - starttime) > resend){ //needed to use resend differently here
+      //state = 1;
       
-    }
-    delay(400);
+    //}
+    delay(800);
   }
-  else if (state == 1){
+  /*else if (state == 1){
     resend = 10000;//3600000; // 1 hr in milliseconds
     starttime = millis();
     while ((timeLeft = resend - (millis() - starttime)) > 0){ 
       //Serial.println("Waiting loop");
     }
     state = 0;
-  }
+  }*/
   
-}
+//}

@@ -174,6 +174,8 @@ void loop()
   //if (manager.available())
   //{
     
+    //rain.n = digitalRead(d1);
+    //spe.n = digitalRead(d2);
     wind.n = analogRead(A0);
     pre.n = analogRead(A3);
     v.n = analogRead(A1);
