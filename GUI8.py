@@ -12,7 +12,7 @@ import altTab
 sys.path.append(os.path.abspath(r"/home/pi/Documents/WeatherStation"))
 
 
-# *** Default data values
+# ***** Default Values *****
 BATst = ""                          #Weather Station
 photoresistor = 0 
 rainy = 0
@@ -34,16 +34,16 @@ counter = 0
 # *** Establish connection
 connection1, name1 = ArduinoFunctions.connectSerial(counter) #open serial ports for button box and weather station
 counter += 1
-connection2, name2 = ArduinoFunctions.connectSerial(counter)
-    
-# *** Window setup
+connection2, name2 = ArduinoFunctions.connectSerial(counter)  
+   
+# ***** Window setup *****
 print("window setup")
 MainWindow = tk.Tk()
 MainWindow.attributes("-fullscreen", True)
 MainWindow.title("Coastal Connections Weather Station")                     # the name of the window
-width_value = MainWindow.winfo_screenwidth()                                # sets the window size based on the resolution of the screen used
+width_value = MainWindow.winfo_screenwidth()                                 
 height_value = MainWindow.winfo_screenheight()
-MainWindow.geometry("%dx%d+0+0" %(width_value,height_value))
+#MainWindow.geometry("%dx%d+0+0" %(width_value,height_value))
 
 Can=Canvas(MainWindow, width=width_value, height=height_value, bg="blue")   # base window
 Can.place(x=0, y=0)
@@ -63,6 +63,11 @@ print("Title")
 label0 = Label(MainWindow,  text="Weather Station", borderwidth=12, relief="groove", font="HelveticaNeue 90 bold", bg="royalblue4", fg="deepskyblue")
 label0.grid(row=0, column=1, columnspan=2, sticky="n")
 
+# *** Default Battery Status Image
+battPic = PhotoImage(file=r"/home/pi/Documents/WeatherStation/Pictures/Batt_Unk.gif")
+statuslabel = Label(MainWindow, relief="sunken", image=battPic)   #display battery level on top right of screen
+statuslabel.place(x=width_value-130, y=0) 
+
 # *** Weather Condition Images
 photo1 = PhotoImage(file=r"/home/pi/Documents/WeatherStation/Pictures/sunnyicon2.gif")
 label1 = Label(MainWindow, image=photo1)
@@ -72,11 +77,6 @@ photo3 = PhotoImage(file=r"/home/pi/Documents/WeatherStation/Pictures/snowyicon.
 label3 = Label(MainWindow, image=photo3)
 photo4 = PhotoImage(file=r"/home/pi/Documents/WeatherStation/Pictures/rainyicon.gif")
 label4 = Label(MainWindow, image=photo4)
-
-# *** Default Battery Status Image
-battPic = PhotoImage(file=r"/home/pi/Documents/WeatherStation/Pictures/Batt_Unk.gif")
-statuslabel = Label(MainWindow, relief="sunken", image=battPic)   #display battery level on top right of screen
-statuslabel.place(x=width_value-130, y=0) 
 
 # *** Clock/Date
 # *** f1 is a frame to add a grid within a single cell
@@ -124,19 +124,18 @@ with acquire_timeout(lock, 2) as acquired:
 
 # *** IMAGE SELECTION ***
 # *** Puts battery status icon on top right of page
-def battStat():
-    global BATst
+def battStat(BATst, data):
     global battPic
     #print("Battery Level: ", BATst)
     newbattPic = 0
-    if (data1[0]!='-1'):
-        if(BATst == "100"):
+    if (data != '-1'):
+        if(BATst == "100%"):
             newbattPic = PhotoImage(file=r"/home/pi/Documents/WeatherStation/Pictures/Batt_Full.gif")
-        elif(BATst == "80"):
+        elif(BATst == "80%"):
             newbattPic = PhotoImage(file=r"/home/pi/Documents/WeatherStation/Pictures/Batt_75.gif")
-        elif(BATst == "50"):
+        elif(BATst == "50%"):
             newbattPic = PhotoImage(file=r"/home/pi/Documents/WeatherStation/Pictures/Batt_50.gif")
-        elif(BATst == "20"):
+        elif(BATst == "20%"):
             newbattPic = PhotoImage(file=r"/home/pi/Documents/WeatherStation/Pictures/Batt_25.gif")
         elif(BATst == "Dead"):
             newbattPic = PhotoImage(file=r"/home/pi/Documents/WeatherStation/Pictures/Batt_0.gif")
@@ -150,8 +149,9 @@ def battStat():
         statuslabel.place(x=width_value-130, y=0)
     
 # *** Puts weather condition icon on left and places the corresponding text under date/time
-def weatherStat():
+def weatherStat(hum, photoresistor, rainy, precipitation):
     global cnd
+    print("weather photoresistor: " , photoresistor)
     if photoresistor < 400:
         if (cnd != '2'): #if repeated, then don't update
             label1.grid(row=1, sticky="sw")
@@ -197,19 +197,33 @@ wind.grid(row=10, column=2, sticky="ew")
 def polling(MainWindow):
     global data1
     global data2
+    # ***** Default Values *****
+    BATst = ""                          #Weather Station
+    photoresistor = 0 
+    rainy = 0
+    temp = 0
+    hum = 0
+    precipitation = 0
+    windD = "??"
+    windSpeed = 0
+    windy = (windD,windSpeed,"mi/hr")
+    tempData = '0'
+    newData = []
     #lock.acquire()
     while True:
         data1 = ArduinoFunctions.readSerial(connection1, name1)      # get data from weather station and button box
         data2 = ArduinoFunctions.readSerial(connection2, name2)
         #lock.release()
-        weatherData()             # update weather station data values
-        battStat()                                                   # determine image for battery status and weather condition
-        weatherStat()
-        buttonEvent()
+        #MainWindow.update()
         #MainWindow.update_idletasks()
-        if (data1 != '-1' or data1[0]!='-1' or data2 != '-1' or data2[0]!='-1'):
+        newData = weatherData()         #BATst, hum, photoresistor, rainy, temp, precipitation, windD, windSpeed, windy                                       # update weather station data values
+        if (newData != '-1'):
+            battStat(newData[0], newData[8])                                                   # determine image for battery status and weather condition
+            weatherStat(newData[1], newData[2], newData[3], newData[6])
+        buttonEvent()                                                # gets button input and compares to weather condition
+        if (data1 != '-1' or data2 != '-1' or data1[0]!='-1' or data2[0]!='-1'):
+            #print(data1, data2)
             MainWindow.update()
-        print(data1, data2)
         #polling(MainWindow)                  # poll every 100ms
 
 '''
@@ -220,16 +234,51 @@ for func in [polling(), weatherData()]:
 thread.join()    
 '''
 
+# *** button box data handling
+def buttonData(connection, name):
+    if(name=="CC1101"):
+            btnpress = ArduinoFunctions.readSerial(connection, name)
+    return btnpress
+
+# *** Button i/o
+def buttonEvent():
+    def correct (*ignore):
+        labelCheck.place(x=width_value/3, y=height_value/5)
+        labelCheck.after(250, labelCheck.place_forget)
+    def incorrect (*ignore):
+        labelEx.place(x=width_value/3, y=height_value/5)
+        labelEx.after(250, labelEx.place_forget)
+
+    labelCheck = Label(MainWindow, font="HelveticaNeue 500 bold", bg="royalblue4", fg="limegreen", text = "✓", anchor='center')     
+    labelEx = Label(MainWindow, font="HelveticaNeue 500 bold", bg="royalblue4", fg="crimson", text = "✗", anchor='center')
+
+    
+    if(name2 == "CC1101"):                                     #get button press
+        btnpress = buttonData(connection2, name2)
+    elif(name1 == "CC1101"):
+        btnpress = buttonData(connection1, name1) 
+   
+   
+    if(btnpress == cnd):#show correct if matches weather condition
+        correct()
+    elif(btnpress == '1' or btnpress == '2' or btnpress == '4' or btnpress == '8'):
+        incorrect()
+    elif(btnpress == '10'):
+        altTab.altTab()
+    else:
+        return
+    return
+
 # *** weather station data handling
 def weatherData():
-    
+    BATst = '0'
     if(name1=="Moteino"):
-        if (data1[0]!="-1"):               #Only change values when receiving new data
+        if (data1[0]!='-1'):               #Only change values when receiving new data
             BATst = ArduinoFunctions.getBatStatus(int(data1[6]))
             #print("Moteino Battery Level: ",BATst)
             hum = int(data1[1])                                                  #humidity
             photoresistor = int(data1[7])                                        #photoresistor
-            rainy = round(ArduinoFunctions.getRainVolume(int(data1[2])), 0)                #precipitation
+            rainy = ArduinoFunctions.getRainVolume(float(data1[2]))                #precipitation
             try:
                 temp = round(float(data1[0]) * 9/5 + 32, 0)                            #temperature converted from C to F, rounded
             except(ValueError):
@@ -243,11 +292,15 @@ def weatherData():
             hum_text.set("Humidity:{}".format(hum))
             temp_text.set("Temperature:{}°F".format(temp))
             windy_text.set("wind:{}{}{}".format(*windy))
+            
+            print(BATst, hum, photoresistor, rainy, temp, precipitation, windD, windSpeed, windy)
             #rain_text.set("Rain:{}".format(rainy))
-            #return
+            return BATst, hum, photoresistor, rainy, temp, precipitation, windD, windSpeed, windy
+        
+        return data1[0]
             
     elif(name2=="Moteino"):
-         if (data2[0]!="-1"):
+         if (data2[0]!='-1'):
             BATst = ArduinoFunctions.getBatStatus(int(data2[6]))
             #print("Moteino Battery Level: ",BATst)
             hum = int(data2[1])                                                  #humidity
@@ -266,51 +319,10 @@ def weatherData():
             hum_text.set("Humidity:{}".format(hum))
             temp_text.set("Temperature:{}°F".format(temp))
             windy_text.set("wind:{}{}{}".format(*windy))
-            
-            
-            
-# *** button box data handling
-def buttonData(connection, name):
-    if(name=="CC1101"):
-            btnpress = ArduinoFunctions.readSerial(connection, name)
-    return btnpress
 
-
-# *** Button i/o
-def buttonEvent():
-    def correct (*ignore):
-        labelCheck.place(x=width_value/3, y=height_value/5)
-        labelCheck.after(250, labelCheck.place_forget)
-    def incorrect (*ignore):
-        labelEx.place(x=width_value/3, y=height_value/5)
-        labelEx.after(250, labelEx.place_forget)
-
-    labelCheck = Label(MainWindow, font="HelveticaNeue 500 bold", bg="royalblue4", fg="limegreen", text = "✓", anchor='center')     
-    labelEx = Label(MainWindow, font="HelveticaNeue 500 bold", bg="royalblue4", fg="crimson", text = "✗", anchor='center')
-    labelNoRX = Label(MainWindow, font="HelveticaNeue 500 bold", bg="royalblue4", fg="crimson", text = "no connection", anchor='center')
-
-    MainWindow.bind('<Button-1>', correct)          #bindings
-    MainWindow.bind('<Button-3>', incorrect)
-    
-    if(name2 == "CC1101"):                                     #get button press
-        btnpress = buttonData(connection2, name2)
-    elif(name1 == "CC1101"):
-        btnpress = buttonData(connection1, name1) 
-   
-   
-    if(btnpress == cnd):#show correct if matches weather condition
-        correct()
-    elif(btnpress == '1' or btnpress == '2' or btnpress == '4' or btnpress == '8'):
-        incorrect()
-    elif(btnpress == '10'):
-        altTab.altTab()
-    elif(btnpress == '0'):
-        return
-    else:
-        return
-    return
-
-
+            print(BATst, hum, photoresistor, rainy, temp, precipitation, windD, windSpeed, windy)
+            return BATst, hum, photoresistor, rainy, temp, precipitation, windD, windSpeed
+         return data2[0]
 # *** continuously poll weather data and button presses and update gui
 polling(MainWindow)              
 

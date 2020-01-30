@@ -4,7 +4,8 @@ from sys import exit                                #import exit from sys librar
 #determine state of battery
 def getBatStatus(an):
     status = "0"
-    an = (an*(3.3/1023))*(68+22)/22
+    print(an)
+    an = (an*(3.3/1023))*(677+215)/215
     print(an)
     if an > 14.4:
         status = "Overcharged"
@@ -36,22 +37,22 @@ def getWindDirection(an):
     #python has no switch. Dictionary acts as switch statement
     #create dictionary with calibrated direction values
     directions = {
-        788:    "N",
-        407:    "NNE",
+        788:    "N ",
+        #407:    "NNE",
         462:    "NE",
-        82:        "ENE",
-        91:        "E",
-        64:        "ESE",
+        #82:        "ENE",
+        91:        "E ",
+        #64:        "ESE",
         183:    "SE",
-        125:    "SSE",
-        287:    "S",
-        244:    "SSW",
+        #125:    "SSE",
+        287:    "S ",
+        #244:    "SSW",
         631:    "SW",
-        600:    "WSW",
-        945:    "W",
-        828:    "WNW",
+        #600:    "WSW",
+        945:    "W ",
+        #828:    "WNW",
         887:    "NW",
-        704:    "NNW"
+        #704:    "NNW"
     }
     return directions.get(an)    #get direction
 
@@ -70,11 +71,10 @@ def getSnow(an, temp, hum):
 #read a set of values from the arduino
 def readSerial(connection, name):
     #values = 0
-   
     if name == "Moteino":                                #for Moteino connection
         if(connection.in_waiting>0):                     
             values = []
-            print("At motino")                   #create an empty list
+            print("At Moteino")                   #create an empty list
             for i in range(8):                                #loop n-1 times for most data
                 values.append(connection.readline())        #read data from the connection
                 values[i] = values[i].decode()                #translate bytes to string            
@@ -92,8 +92,8 @@ def readSerial(connection, name):
         #else:                                                #all other cases
         #    values = None                                    #set to null
         else:
-            values = -1
-    print("glenn: ",values)
+            values = '-1'
+    
     return values                                        #return values
 
 #read a line from the serial connection and convert it from bytes
@@ -102,7 +102,7 @@ def connectSerial(counter):
     i = counter                                                #create a counter
     while True:                                            #loop forever
         try:                                            #try the following code
-            connection = Serial(port.format(i), 9600)    #open serial connection at 9600 baud
+            connection = Serial(port.format(i), 38400)    #open serial connection at 9600 baud
             
             break                                        #break out of the while loop
         except SerialException:                            #catch exception
@@ -125,7 +125,7 @@ def connectSerial(counter):
             break                                        #exit loop
     garbage =  connection.readline().decode()
     while garbage != "Good!\r\n":                           #wait for
-        print(garbage)
+        #print(garbage)
         connection.write(bytes([254]))                            #send 0xFE
         garbage = connection.readline().decode()
     #connection.timeout(0)    
