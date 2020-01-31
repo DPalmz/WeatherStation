@@ -2,6 +2,8 @@ import tkinter as tk
 from tkinter import *
 from PIL import ImageTk,Image
 from datetime import date
+from pydub import AudioSegment
+from pydub.playback import play
 #from threading import Lock, Thread
 import ArduinoFunctions
 import os
@@ -29,6 +31,9 @@ cnd = 0
 #data2 = 0
 counter = 0
 #lock = Lock()                         #Lock for multithreading
+
+correctSound = AudioSegment.from_wav(sys.path[0] + "/correct_Current.wav")
+incorrectSound = AudioSegment.from_wav(sys.path[0] + "/wrong_Current.wav")
 
 # *** Establish connection
 connection1, name1 = ArduinoFunctions.connectSerial(counter) #open serial ports for button box and weather station
@@ -138,30 +143,26 @@ def polling(MainWindow):
         elif (name2 == "Moteino"):
             newData = weatherData(data2)
             buttonEvent(data1)
+        else:
+            newData = [0, 0, 0, 0, 0, 0, 0] #in case the weather station is not connected
         if (newData != '-1'):
-            battStat(newData[0], newData[8])                                                   # determine image for battery status and weather condition
+            battStat(newData[0])                      # determine image for battery status and weather condition
             weatherStat(newData[1], newData[2], newData[3], newData[6])
                                                 # gets button input and compares to weather condition
         if (data1 != '-1' or data2 != '-1' or data1[0]!='-1' or data2[0]!='-1'):
             #print(data1, data2)
             MainWindow.update()
         #polling(MainWindow)                  # poll every 100ms
-'''
-# *** button box data handling
-def buttonData(connection, name):
-    if(name=="CC1101"):
-            btnpress = ArduinoFunctions.readSerial(connection, name)
-    return btnpress
-'''
+
 # *** Button i/o
 def buttonEvent(data):
     def correct ():
         labelCheck.place(x=width_value/3, y=height_value/5)
-        print("correct")
         MainWindow.after(200, labelCheck.place_forget)
+        play(correctSound)
     def incorrect ():
+        play(incorrectSound)
         labelEx.place(x=width_value/3, y=height_value/5)
-        print("incorrect")
         MainWindow.after(200, labelEx.place_forget)
 
     labelCheck = Label(MainWindow, font="HelveticaNeue 500 bold", bg="royalblue4", fg="limegreen", text = "✓", anchor='center')
@@ -180,25 +181,26 @@ def buttonEvent(data):
     return
 
 # *** Puts battery status icon on top right of page
-def battStat(BATst, data):
+def battStat(BATst):
     global battPic
     #print("Battery Level: ", BATst)
     newbattPic = 0
-    if (data != '-1'):
-        if(BATst == "100%"):
-            newbattPic = PhotoImage(file=r"/home/pi/Documents/WeatherStation/Pictures/Batt_Full.gif")
-        elif(BATst == "80%"):
-            newbattPic = PhotoImage(file=r"/home/pi/Documents/WeatherStation/Pictures/Batt_75.gif")
-        elif(BATst == "50%"):
-            newbattPic = PhotoImage(file=r"/home/pi/Documents/WeatherStation/Pictures/Batt_50.gif")
-        elif(BATst == "20%"):
-            newbattPic = PhotoImage(file=r"/home/pi/Documents/WeatherStation/Pictures/Batt_25.gif")
-        elif(BATst == "Dead"):
-            newbattPic = PhotoImage(file=r"/home/pi/Documents/WeatherStation/Pictures/Batt_0.gif")
-        elif(BATst == "Overcharged"):
-            newbattPic = PhotoImage(file=r"/home/pi/Documents/WeatherStation/Pictures/Batt_Ovr.gif")
-        else:
-            newbattPic = PhotoImage(file=r"/home/pi/Documents/WeatherStation/Pictures/Batt_Unk.gif")                     
+    #if (data != '-1'):
+    if(BATst == "100%"):
+        newbattPic = PhotoImage(file=r"/home/pi/Documents/WeatherStation/Pictures/Batt_Full.gif")
+    elif(BATst == "80%"):
+        newbattPic = PhotoImage(file=r"/home/pi/Documents/WeatherStation/Pictures/Batt_75.gif")
+    elif(BATst == "50%"):
+        newbattPic = PhotoImage(file=r"/home/pi/Documents/WeatherStation/Pictures/Batt_50.gif")
+    elif(BATst == "20%"):
+        newbattPic = PhotoImage(file=r"/home/pi/Documents/WeatherStation/Pictures/Batt_25.gif")
+    elif(BATst == "Dead"):
+        newbattPic = PhotoImage(file=r"/home/pi/Documents/WeatherStation/Pictures/Batt_0.gif")
+    elif(BATst == "Overcharged"):
+        newbattPic = PhotoImage(file=r"/home/pi/Documents/WeatherStation/Pictures/Batt_Ovr.gif")
+    else:
+        newbattPic = PhotoImage(file=r"/home/pi/Documents/WeatherStation/Pictures/Batt_Unk.gif")                     
+    
     if newbattPic != battPic and newbattPic != 0:
         battPic = newbattPic
         statuslabel = Label(MainWindow, relief="sunken", image=battPic)
