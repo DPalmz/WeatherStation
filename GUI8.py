@@ -74,24 +74,24 @@ statuslabel = Label(MainWindow, relief="sunken", image=battPic)   #display batte
 statuslabel.place(x=width_value-130, y=0) 
 
 # *** Weather Condition Images
-photo1 = PhotoImage(file=r"/home/pi/Documents/WeatherStation/Pictures/sunnyicon2.gif")
-label1 = Label(MainWindow, image=photo1)
-print(photo1)
-photo2 = PhotoImage(file=r"/home/pi/Documents/WeatherStation/Pictures/cloudyicon.gif")
-label2 = Label(MainWindow, image=photo2, bg="green")
-photo3 = PhotoImage(file=r"/home/pi/Documents/WeatherStation/Pictures/snowyicon.gif")
-label3 = Label(MainWindow, image=photo3)
-photo4 = PhotoImage(file=r"/home/pi/Documents/WeatherStation/Pictures/rainyicon.gif")
-label4 = Label(MainWindow, image=photo4)
+sunnyPic = PhotoImage(file=r"/home/pi/Documents/WeatherStation/Pictures/sunnyicon2.gif")
+cloudyPic = PhotoImage(file=r"/home/pi/Documents/WeatherStation/Pictures/cloudyicon.gif")
+snowyPic = PhotoImage(file=r"/home/pi/Documents/WeatherStation/Pictures/snowyicon.gif")
+rainyPic = PhotoImage(file=r"/home/pi/Documents/WeatherStation/Pictures/rainyicon.gif")
+weatherPic = Label(MainWindow, image=sunnyPic)
+weatherPic.grid(row=1, sticky="sw")
+
 
 # *** Clock/Date
-# *** f1 is a frame to add a grid within a single cell
+# *** f1 is a frame to add a grid within a single cell - aligns time, date, and weather condition text
 f1 = Frame(MainWindow)
 f1.grid(row=1, column=1, columnspan=2)
-labelS = Label(f1, bd=4, relief="sunken", font="HelveticaNeue 90 bold", bg="royalblue4", fg="deepskyblue", text="Sunny" )
-labelC = Label(f1, bd=4, relief="sunken", font="HeLveticaNeue 90 bold", bg="royalblue4", fg="deepskyblue", text="Cloudy")
-labelSS = Label(f1, bd=4, relief="sunken", font="HelveticaNeue 90 bold", bg="royalblue4", fg="deepskyblue", text="Snowy")
-labelR = Label(f1, bd=4, relief="sunken", font="HelveticaNeue 90 bold", bg="royalblue4", fg="deepskyblue", text="Rainy")
+# sunnyLabel = Label(f1, bd=4, relief="sunken", font="HelveticaNeue 90 bold", bg="royalblue4", fg="deepskyblue", text="Sunny" )
+# cloudyLabel = Label(f1, bd=4, relief="sunken", font="HeLveticaNeue 90 bold", bg="royalblue4", fg="deepskyblue", text="Cloudy")
+# snowyLabel = Label(f1, bd=4, relief="sunken", font="HelveticaNeue 90 bold", bg="royalblue4", fg="deepskyblue", text="Snowy")
+# rainyLabel = Label(f1, bd=4, relief="sunken", font="HelveticaNeue 90 bold", bg="royalblue4", fg="deepskyblue", text="Rainy")
+weatherLabel = Label(f1, bd=4, relief="sunken", font="HelveticaNeue 90 bold", bg="royalblue4", fg="deepskyblue", text="Sunny")
+weatherLabel.grid(row=2, column=0, columnspan=2, sticky="nwse")
 
 # *** this function calls the time libary which will be used to create a dyanmic digital clock
 def display_time():
@@ -162,15 +162,15 @@ def polling(MainWindow):
 # *** Button i/o
 def buttonEvent(data):
     def correct ():
-        labelCheck.place(x=width_value/3, y=height_value/5)
-        MainWindow.after(200, labelCheck.place_forget)
+        cloudyLabelheck.place(x=width_value/3, y=height_value/5)
+        MainWindow.after(200, cloudyLabelheck.place_forget)
         #play(correctSound)
     def incorrect ():
         #play(incorrectSound)
         labelEx.place(x=width_value/3, y=height_value/5)
         MainWindow.after(200, labelEx.place_forget)
 
-    labelCheck = Label(MainWindow, font="HelveticaNeue 500 bold", bg="royalblue4", fg="limegreen", text = "✓", anchor='center')
+    cloudyLabelheck = Label(MainWindow, font="HelveticaNeue 500 bold", bg="royalblue4", fg="limegreen", text = "✓", anchor='center')
     labelEx = Label(MainWindow, font="HelveticaNeue 500 bold", bg="royalblue4", fg="crimson", text = "✗", anchor='center')
 
     btnpress = data
@@ -255,33 +255,29 @@ def weatherData(data1):
 def weatherStat(hum, photoresistor, rainy, precipitation):
     global cnd
     #print("weather photoresistor: " , photoresistor)
-    if photoresistor < 400:
-        if (cnd != '2'): #if repeated, then don't update
-            label1.grid(row=1, sticky="sw")
-            labelS.grid(row=2, rowspan=2, column=0, columnspan=2, sticky="nwse")
-            label1.forget()
-            labelS.forget()
+    if photoresistor < 400:                                                                     #sunny condition
+        if (cnd != '2'):         #if the same condition is repeated, then don't update
+            weatherPic.configure(image=sunnyPic)
+            weatherLabel.configure(text="Sunny")
+            
             cnd = '2'
-    elif photoresistor >= 400 and rainy == 0:
+    elif photoresistor >= 400 and rainy == 0:                                                  #cloudy condition
         if (cnd != '4'):
-            label2.grid(row=1, sticky="sw")
-            labelC.grid(row=2, rowspan=2, column=0, columnspan=2, sticky="nwse")
-            label2.forget()
-            labelC.forget()
+            weatherPic.configure(image=cloudyPic)
+            weatherLabel.configure(text="Cloudy")
+            
             cnd = '4'
-    elif precipitation == "freezing, possible sleet" or precipitation ==  "possible snow":
+    elif precipitation == "freezing, possible sleet" or precipitation ==  "possible snow":   #snowy condition
         if (cnd != '8'):
-            label3.grid(row=1, sticky="sw")
-            labelSS.grid(row=2, rowspan=2, column=0, columnspan=2, sticky="nwse")
-            label3.forget()
-            labelSS.forget()
+            weatherPic.configure(image=snowyPic)
+            weatherLabel.configure(text="Snowy")
+            
             cnd = '8'
-    elif rainy != 0:
+    elif rainy != 0:                                                                        #rainy condition
         if (cnd != '1'):
-            label4.grid(row=1, sticky="sw")
-            labelR.grid(row=2, rowspan=2, column=0, columnspan=2, sticky="nwse")
-            label4.forget()
-            labelR.forget()
+            weatherPic.configure(image=rainyPic)
+            weatherLabel.configure(text="Rainy")
+            
             cnd = '1'
     else:
         print ("Error")
