@@ -57,7 +57,7 @@ pic = ImageTk.PhotoImage(img)                                               # ba
 Can.create_image(-5, -5, image=pic, anchor=NW)
 
 # *** Coastal Connections logo
-#print("Logo")
+#print("Logo")/home/pi/Documents/WeatherStation
 img2 = Image.open(r"/home/pi/Documents/WeatherStation/Pictures/coast.gif").resize((506,210),Image.ANTIALIAS)
 coast = ImageTk.PhotoImage(img2)
 coast1 = Label(MainWindow, image=coast)
@@ -174,7 +174,7 @@ def buttonEvent(data):
     labelEx = Label(MainWindow, font="HelveticaNeue 500 bold", bg="royalblue4", fg="crimson", text = "✗", anchor='center')
 
     btnpress = data
-    #print('Memory usage (buttonEvent): {}'.format(resource.getrusage(resource.RUSAGE_SELF)))
+    #print('Memo/home/pi/Documents/WeatherStationry usage (buttonEvent): {}'.format(resource.getrusage(resource.RUSAGE_SELF)))
     if(btnpress == cnd):#show correct if matches weather condition
         correct()
     elif(btnpress == '1' or btnpress == '2' or btnpress == '4' or btnpress == '8'):
@@ -236,7 +236,7 @@ def weatherData(data1):
             temp = round(float(data1[0][-4:]) * 9/5 + 32, 0) 
         precipitation = ArduinoFunctions.getSnow(int(data1[5]), temp, hum)   #snow fall
         windD = ArduinoFunctions.getWindDirection(int(data1[4]))             #wind direction
-        windSpeed = round(ArduinoFunctions.getWindSpeed(int(data1[3])), 0)   #wind speed
+        windSpeed = ro/home/pi/Documents/WeatherStationund(ArduinoFunctions.getWindSpeed(int(data1[3])), 0)   #wind speed
             
         windy = (windD,windSpeed,"mi/hr")                               #format for wind output
             
