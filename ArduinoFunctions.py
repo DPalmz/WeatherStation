@@ -78,7 +78,7 @@ def readSerial(connection, name):
               
             values = []
             #print("At Moteino")                   #create an empty list
-            connection.flushInput()
+            #connection.flushInput()
             for i in range(8):                                #loop n-1 times for most data
                 values.append(connection.readline())        #read data from the connection
                 values[i] = values[i].decode()                #translate bytes to string            
@@ -86,7 +86,7 @@ def readSerial(connection, name):
         #values.append(connection.readline())            #read data from the connection
         #values[i] = values[i].decode()                    #translate bytes to string
         #values[i] = float(values[LAST])                    #convert to float (battery Voltage)
-            #connection.flushInput() # trial to see if correct memory leak: trial #2
+            connection.flushInput() # trial to see if correct memory leak: trial #2
             
         else:
             values = ["-1"]     
@@ -95,10 +95,10 @@ def readSerial(connection, name):
         if(connection.in_waiting>0):                     
             
             #print("at cc")
-            connection.flushInput()
+            #connection.flushInput()
             values = connection.readline()                    #read a byte from the connection
             values = values.decode()[:-2]
-            #connection.flushInput()  #trial to see if correct memory leak: trial #2
+            connection.flushInput()  #trial to see if correct memory leak: trial #2
         #else:                                                #all other cases
         #    values = None                                    #set to null
         else:
@@ -119,7 +119,7 @@ def connectSerial(counter):
             if i > 256:                                    #check for com port limit
                 return ("error", "error")                        #no port opened
     #print("Port opened: " + connection.name)            ##print out the message
-    connection.flushInput()                             #get rid of anything left over?
+    #connection.flushInput()                             #get rid of anything left over?
     while True:                                            #loop forever
         data = connection.readline()                    #read data from the connection
         try:                                            #try the following code

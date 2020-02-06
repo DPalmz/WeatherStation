@@ -42,7 +42,7 @@ counter += 1
 connection2, name2 = ArduinoFunctions.connectSerial(counter)  
    
 # ***** Window setup *****
-#print("window setup")
+print("window setup")
 MainWindow = tk.Tk()
 MainWindow.attributes("-fullscreen", True)
 MainWindow.title("Coastal Connections Weather Station")                     # the name of the window
@@ -57,14 +57,14 @@ pic = ImageTk.PhotoImage(img)                                               # ba
 Can.create_image(-5, -5, image=pic, anchor=NW)
 
 # *** Coastal Connections logo
-#print("Logo")/home/pi/Documents/WeatherStation
+print("Logo")
 img2 = Image.open(r"/home/pi/Documents/WeatherStation/Pictures/coast.gif").resize((506,210),Image.ANTIALIAS)
 coast = ImageTk.PhotoImage(img2)
 coast1 = Label(MainWindow, image=coast)
 coast1.grid(sticky="ns") 
 
 # *** Title
-#print("Title")
+print("Title")
 label0 = Label(MainWindow,  text="Weather Station", borderwidth=12, relief="groove", font="HelveticaNeue 90 bold", bg="royalblue4", fg="deepskyblue")
 label0.grid(row=0, column=1, columnspan=2, sticky="n")
 
@@ -144,6 +144,7 @@ def polling(MainWindow):
     while True:
         data1 = ArduinoFunctions.readSerial(connection1, name1)      # get data from weather station and button box
         data2 = ArduinoFunctions.readSerial(connection2, name2)
+        print(data1, data2)
         print('Memory usage (data): {}'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
         #lock.release()
         #MainWindow.update()
@@ -164,7 +165,7 @@ def polling(MainWindow):
             print('Memory usage (battStatPolling): {}'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
             weatherStat(newData[1], newData[2], newData[3], newData[6])
             print('Memory usage (weatherStatPolling): {}\n'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
-            #MainWindow.update()
+            MainWindow.update()
 
 # *** Button i/o
 def buttonEvent(data):
@@ -232,13 +233,14 @@ def weatherData(data1):
     if (data1[0]!='-1'):               #Only change values when receiving new data
         BATst = ArduinoFunctions.getBatStatus(int(data1[6]))
         ##print("Moteino Battery Level: ",BATst)
-        hum = int(data1[1])                                                  #humidity
+        hum = float(data1[1])                                                  #humidity
         photoresistor = int(data1[7])                                        #photoresistor
         rainy = ArduinoFunctions.getRainVolume(float(data1[2]))                #precipitation
         try:
             temp = round(float(data1[0]) * 9/5 + 32, 0)                            #temperature converted from C to F, rounded
         except(ValueError):
-            temp = round(float(data1[0][-4:]) * 9/5 + 32, 0) 
+            temp = round(float(data1[0][-4:]) * 9/5 + 32, 0)
+            print("Weather Data Error!")
         precipitation = ArduinoFunctions.getSnow(int(data1[5]), temp, hum)   #snow fall
         windD = ArduinoFunctions.getWindDirection(int(data1[4]))             #wind direction
         windSpeed = round(ArduinoFunctions.getWindSpeed(int(data1[3])), 0)   #wind speed
