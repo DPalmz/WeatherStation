@@ -1,12 +1,13 @@
 from serial import *                                #import serial library functions
 from sys import exit                                #import exit from sys library
+import resource
 
 #determine state of battery
 def getBatStatus(an):
     status = "0"
-    print(an)
+    #print(an)
     an = (an*(3.3/1023))*(677+215)/215
-    print(an)
+    #print(an)
     if an > 14.4:
         status = "Overcharged"
     elif an > 13:
@@ -70,11 +71,14 @@ def getSnow(an, temp, hum):
 
 #read a set of values from the arduino
 def readSerial(connection, name):
-    #values = 0
+    values = ['-1']
     if name == "Moteino":                                #for Moteino connection
+        print("Moteino buffer: ", connection.in_waiting)
         if(connection.in_waiting>0):                     
+              
             values = []
-            print("At Moteino")                   #create an empty list
+            #print("At Moteino")                   #create an empty list
+            connection.flushInput()
             for i in range(8):                                #loop n-1 times for most data
                 values.append(connection.readline())        #read data from the connection
                 values[i] = values[i].decode()                #translate bytes to string            
@@ -82,18 +86,23 @@ def readSerial(connection, name):
         #values.append(connection.readline())            #read data from the connection
         #values[i] = values[i].decode()                    #translate bytes to string
         #values[i] = float(values[LAST])                    #convert to float (battery Voltage)
+            #connection.flushInput() # trial to see if correct memory leak: trial #2
+            
         else:
             values = ["-1"]     
     elif name == "CC1101":                                #for CC1101 connection
+        print("CC1101 buffer: ", connection.in_waiting)
         if(connection.in_waiting>0):                     
-            print("at cc")
+            
+            #print("at cc")
+            connection.flushInput()
             values = connection.readline()                    #read a byte from the connection
             values = values.decode()[:-2]
+            #connection.flushInput()  #trial to see if correct memory leak: trial #2
         #else:                                                #all other cases
         #    values = None                                    #set to null
         else:
             values = '-1'
-    
     return values                                        #return values
 
 #read a line from the serial connection and convert it from bytes
@@ -109,7 +118,7 @@ def connectSerial(counter):
             i += 1                                        #increment counter
             if i > 256:                                    #check for com port limit
                 return ("error", "error")                        #no port opened
-    print("Port opened: " + connection.name)            #print out the message
+    #print("Port opened: " + connection.name)            ##print out the message
     connection.flushInput()                             #get rid of anything left over?
     while True:                                            #loop forever
         data = connection.readline()                    #read data from the connection
@@ -125,7 +134,7 @@ def connectSerial(counter):
             break                                        #exit loop
     garbage =  connection.readline().decode()
     while garbage != "Good!\r\n":                           #wait for
-        #print(garbage)
+        ##print(garbage)
         connection.write(bytes([254]))                            #send 0xFE
         garbage = connection.readline().decode()
     #connection.timeout(0)    

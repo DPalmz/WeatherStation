@@ -33,8 +33,8 @@ cnd = 0
 counter = 0
 #lock = Lock()                         #Lock for multithreading
 
-correctSound = AudioSegment.from_wav(sys.path[0] + "/correct_Current.wav")
-incorrectSound = AudioSegment.from_wav(sys.path[0] + "/wrong_Current.wav")
+correctSound = AudioSegment.from_wav(sys.path[0] + "/Sounds/correct_Current.wav")
+incorrectSound = AudioSegment.from_wav(sys.path[0] + "/Sounds/wrong_Current.wav")
 
 # *** Establish connection
 connection1, name1 = ArduinoFunctions.connectSerial(counter) #open serial ports for button box and weather station
@@ -68,10 +68,17 @@ coast1.grid(sticky="ns")
 label0 = Label(MainWindow,  text="Weather Station", borderwidth=12, relief="groove", font="HelveticaNeue 90 bold", bg="royalblue4", fg="deepskyblue")
 label0.grid(row=0, column=1, columnspan=2, sticky="n")
 
-# *** Default Battery Status Image
-battPic = PhotoImage(file=r"/home/pi/Documents/WeatherStation/Pictures/Batt_Unk.gif")
-statuslabel = Label(MainWindow, relief="sunken", image=battPic)   #display battery level on top right of screen
-statuslabel.place(x=width_value-130, y=0) 
+# *** Default Battery Status Images
+battPic100 = ImageTk.PhotoImage(Image.open("/home/pi/Documents/WeatherStation/Pictures/Batt_Full.gif"))
+battPic80 = ImageTk.PhotoImage(Image.open("/home/pi/Documents/WeatherStation/Pictures/Batt_75.gif"))
+battPic50 = ImageTk.PhotoImage(Image.open("/home/pi/Documents/WeatherStation/Pictures/Batt_50.gif"))
+battPic20 = ImageTk.PhotoImage(Image.open("/home/pi/Documents/WeatherStation/Pictures/Batt_25.gif"))
+battPic0 = ImageTk.PhotoImage(Image.open("/home/pi/Documents/WeatherStation/Pictures/Batt_0.gif"))
+battPicOvr = ImageTk.PhotoImage(Image.open("/home/pi/Documents/WeatherStation/Pictures/Batt_Ovr.gif"))
+battPicUnk = ImageTk.PhotoImage(Image.open("/home/pi/Documents/WeatherStation/Pictures/Batt_Unk.gif"))  
+
+battStatLabel = Label(MainWindow, relief="sunken", image=battPicUnk)   #display battery level on top right of screen
+battStatLabel.place(x=width_value-130, y=0)
 
 # *** Weather Condition Images
 sunnyPic = PhotoImage(file=r"/home/pi/Documents/WeatherStation/Pictures/sunnyicon2.gif")
@@ -99,6 +106,7 @@ def display_time():
     #labelTime['text'] = current_time
     time_text.set(current_time)
     MainWindow.after(1000,display_time)
+    
 time_text = tk.StringVar(MainWindow)
 labelTime= Label(f1,bd=4, relief="sunken", font="HelveticaNeue 90 bold", bg="royalblue4", fg ="deepskyblue", textvariable= time_text, anchor=CENTER, width= 15)
 labelTime.grid(row=0, column=0, columnspan=2, sticky="nwse")
@@ -110,6 +118,7 @@ def display_date():
     #DateLabel['text']=cdate
     date_text.set(cdate)
     MainWindow.after(1000,display_date)
+    
 date_text = tk.StringVar(MainWindow)
 DateLabel = Label(f1, bd=4, relief="sunken", font="HelveticaNeue 90 bold", bg="royalblue4",  fg="deepskyblue", textvariable=date_text, anchor=CENTER, width=15)
 DateLabel.grid(row=1, column=0, columnspan=2, sticky="nwse")
@@ -135,6 +144,7 @@ def polling(MainWindow):
     while True:
         data1 = ArduinoFunctions.readSerial(connection1, name1)      # get data from weather station and button box
         data2 = ArduinoFunctions.readSerial(connection2, name2)
+        print('Memory usage (data): {}'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
         #lock.release()
         #MainWindow.update()
         #MainWindow.update_idletasks()
@@ -148,16 +158,13 @@ def polling(MainWindow):
         else:
             newData = [0, 0, 0, 0, 0, 0, 0] #in case the weather station is not connected
             
-        if (newData != '-1'):
-            print('Memory usage (before): {}'.format(resource.getrusage(resource.RUSAGE_SELF)))
+        if (newData != '-1'):   #if newData is valid then update labels
+            print('Memory usage (before): {}'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
             battStat(newData[0])                      # determine image for battery status and weather condition
-            print('Memory usage (battStat): {}'.format(resource.getrusage(resource.RUSAGE_SELF)))
+            print('Memory usage (battStatPolling): {}'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
             weatherStat(newData[1], newData[2], newData[3], newData[6])
-            print('Memory usage (weatherStat): {}\n'.format(resource.getrusage(resource.RUSAGE_SELF)))
-            # gets button input and compares to weather condition
-        if (data1 != '-1' or data2 != '-1' or data1[0]!='-1' or data2[0]!='-1'):
-            ##print(data1, data2)
-            MainWindow.update()
+            print('Memory usage (weatherStatPolling): {}\n'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
+            #MainWindow.update()
 
 # *** Button i/o
 def buttonEvent(data):
@@ -186,40 +193,38 @@ def buttonEvent(data):
     return
 
 # *** Puts battery status icon on top right of page
-def battStat(NewBATst):
+def battStat(BATst):
     global battPic
     ##print("Battery Level: ", BATst)
-    newbattPic = 0
+    #newbattPic = 0
     #if (data != '-1'):
     if(BATst == "100%"):
-        newbattPic = ImageTk.PhotoImage(Image.open("/home/pi/Documents/WeatherStation/Pictures/Batt_Full.gif"))
+        battStatLabel.configure(image=battPic100)
     elif(BATst == "80%"):
-        newbattPic = ImageTk.PhotoImage(Image.open("/home/pi/Documents/WeatherStation/Pictures/Batt_75.gif"))
+        battStatLabel.configure(image=battPic80)
     elif(BATst == "50%"):
-        newbattPic = ImageTk.PhotoImage(Image.open("/home/pi/Documents/WeatherStation/Pictures/Batt_50.gif"))
+        battStatLabel.configure(image=battPic50)
     elif(BATst == "20%"):
-        newbattPic = ImageTk.PhotoImage(Image.open("/home/pi/Documents/WeatherStation/Pictures/Batt_25.gif"))
+        battStatLabel.configure(image=battPic20)
     elif(BATst == "Dead"):
-        newbattPic = ImageTk.PhotoImage(Image.open("/home/pi/Documents/WeatherStation/Pictures/Batt_0.gif"))
+        battStatLabel.configure(image=battPic0)
     elif(BATst == "Overcharged"):
-        newbattPic = ImageTk.PhotoImage(Image.open("/home/pi/Documents/WeatherStation/Pictures/Batt_Ovr.gif"))
+        battStatLabel.configure(image=battPicOvr)
     else:
-        newbattPic = ImageTk.PhotoImage(Image.open("/home/pi/Documents/WeatherStation/Pictures/Batt_Unk.gif"))                    
-    
-    print("old image: ", battPic)
-    print("new image: ", newbattPic)
-    
+        battStatLabel.configure(image=battPicUnk)              
+    '''
     if newbattPic != battPic and newbattPic != 0:
         #try:
-        #    statuslabel.destroy()
+        #    battStatLabel.destroy()
         #except NameError:
         #    print("Oops, no variable defined yet!")
         print("UPDATED!!!\n")
         battPic = newbattPic
-        #statuslabel = Label(MainWindow, relief="sunken", image=battPic)
-        statuslabel.configure(image=battPic)
-        #statuslabel.forget()
-
+        #battStatLabel = Label(MainWindow, relief="sunken", image=battPic)
+        battStatLabel.configure(image=battPic)
+        #battStatLabel.forget()
+    '''
+    print('Memory usage (battStat): {}\n'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
 # *** weather station data handling
 def weatherData(data1):
     BATst = '0'
@@ -236,14 +241,14 @@ def weatherData(data1):
             temp = round(float(data1[0][-4:]) * 9/5 + 32, 0) 
         precipitation = ArduinoFunctions.getSnow(int(data1[5]), temp, hum)   #snow fall
         windD = ArduinoFunctions.getWindDirection(int(data1[4]))             #wind direction
-        windSpeed = ro/home/pi/Documents/WeatherStationund(ArduinoFunctions.getWindSpeed(int(data1[3])), 0)   #wind speed
+        windSpeed = round(ArduinoFunctions.getWindSpeed(int(data1[3])), 0)   #wind speed
             
         windy = (windD,windSpeed,"mi/hr")                               #format for wind output
             
         hum_text.set("Humidity:{}".format(hum))
         temp_text.set("Temperature:{}°F".format(temp))
         windy_text.set("wind:{}{}{}".format(*windy))
-            
+        print('Memory usage (weatherData): {}\n'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
         #print(BATst, hum, photoresistor, rainy, temp, precipitation, windD, windSpeed, windy)
         #rain_text.set("Rain:{}".format(rainy))
         #print('Memory usage (weatherDataEnd): {}'.format(resource.getrusage(resource.RUSAGE_SELF)))
@@ -281,6 +286,7 @@ def weatherStat(hum, photoresistor, rainy, precipitation):
             cnd = '1'
     else:
         print ("Error")
+    print('Memory usage (weatherStat): {}\n'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
     #print('Memory usage (weatherStat): {}'.format(resource.getrusage(resource.RUSAGE_SELF)))
 # ***Humidity, temp and wind speed/direction always placed at bottom of the grid
 hum_text = tk.StringVar(MainWindow)
