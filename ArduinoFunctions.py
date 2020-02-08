@@ -86,7 +86,7 @@ def readSerial(connection, name):
         #values.append(connection.readline())            #read data from the connection
         #values[i] = values[i].decode()                    #translate bytes to string
         #values[i] = float(values[LAST])                    #convert to float (battery Voltage)
-            connection.flushInput() # trial to see if correct memory leak: trial #2
+            #connection.flushInput() # trial to see if correct memory leak: trial #2
             
         else:
             values = ["-1"]     
@@ -98,11 +98,12 @@ def readSerial(connection, name):
             #connection.flushInput()
             values = connection.readline()                    #read a byte from the connection
             values = values.decode()[:-2]
-            connection.flushInput()  #trial to see if correct memory leak: trial #2
+            #connection.flushInput()  #trial to see if correct memory leak: trial #2
         #else:                                                #all other cases
         #    values = None                                    #set to null
         else:
             values = '-1'
+    print('Memory usage (readSerial): {}\n'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
     return values                                        #return values
 
 #read a line from the serial connection and convert it from bytes
@@ -111,7 +112,7 @@ def connectSerial(counter):
     i = counter                                                #create a counter
     while True:                                            #loop forever
         try:                                            #try the following code
-            connection = Serial(port.format(i), 38400)    #open serial connection at 9600 baud
+            connection = Serial(port.format(i), 38400)    #open serial connection at 9600 baud (38400 now)
             
             break                                        #break out of the while loop
         except SerialException:                            #catch exception
