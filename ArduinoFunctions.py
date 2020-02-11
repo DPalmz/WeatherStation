@@ -120,7 +120,7 @@ def connectSerial(counter):
             if i > 256:                                    #check for com port limit
                 return ("error", "error")                        #no port opened
     #print("Port opened: " + connection.name)            ##print out the message
-    #connection.flushInput()                             #get rid of anything left over?
+    connection.flushInput()                             #get rid of anything left over?
     while True:                                            #loop forever
         data = connection.readline()                    #read data from the connection
         try:                                            #try the following code

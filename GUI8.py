@@ -6,11 +6,12 @@ from pydub import AudioSegment
 from pydub.playback import play
 #from threading import Lock, Thread
 import ArduinoFunctions
+import altTab
+import Feedback
 import os
+import resource
 import sys
 import time as tm
-import altTab
-import resource
 import tracemalloc
 
 #tracemalloc.start()
@@ -44,7 +45,7 @@ counter += 1
 connection2, name2 = ArduinoFunctions.connectSerial(counter)  
    
 # ***** Window setup *****
-print("window setup")
+#print("window setup")
 MainWindow = tk.Tk()
 MainWindow.attributes("-fullscreen", True)
 MainWindow.title("Coastal Connections Weather Station")                     # the name of the window
@@ -63,12 +64,12 @@ img2 = Image.open(r"/home/pi/Documents/WeatherStation/Pictures/coast.gif").resiz
 coast = ImageTk.PhotoImage(img2)
 coast1 = Label(MainWindow, image=coast)
 coast1.grid(sticky="ns") 
-print("Logo")
+#print("Logo")
 
 # *** Title
 label0 = Label(MainWindow,  text="Weather Station", borderwidth=12, relief="groove", font="HelveticaNeue 90 bold", bg="royalblue4", fg="deepskyblue")
 label0.grid(row=0, column=1, columnspan=2, sticky="n")
-print("Title")
+#print("Title")
 
 # *** Default Battery Status Images
 battPic100 = ImageTk.PhotoImage(Image.open("/home/pi/Documents/WeatherStation/Pictures/Batt_Full.gif"))
@@ -81,7 +82,7 @@ battPicUnk = ImageTk.PhotoImage(Image.open("/home/pi/Documents/WeatherStation/Pi
 
 battStatLabel = Label(MainWindow, relief="sunken", image=battPicUnk)   #display battery level on top right of screen
 battStatLabel.place(x=width_value-130, y=0)
-print("Battery Images")
+#print("Battery Images")
 
 # *** Weather Condition Images
 sunnyPic = PhotoImage(file=r"/home/pi/Documents/WeatherStation/Pictures/sunnyicon2.gif")
@@ -90,7 +91,7 @@ snowyPic = PhotoImage(file=r"/home/pi/Documents/WeatherStation/Pictures/snowyico
 rainyPic = PhotoImage(file=r"/home/pi/Documents/WeatherStation/Pictures/rainyicon.gif")
 weatherPic = Label(MainWindow, image=sunnyPic)
 weatherPic.grid(row=1, sticky="sw")
-print("Weather Images")
+#print("Weather Images")
 
 # *** Clock/Date
 # *** f1 is a frame to add a grid within a single cell - aligns time, date, and weather condition text
@@ -127,25 +128,33 @@ DateLabel = Label(f1, bd=4, relief="sunken", font="HelveticaNeue 90 bold", bg="r
 DateLabel.grid(row=1, column=0, columnspan=2, sticky="nwse")
 display_date()
 
+# *** Feedback Labels
+labelCheck = Label(MainWindow, font="HelveticaNeue 500 bold", bg="royalblue4", fg="limegreen", text = "✓", anchor='center') #correct and incorrect indicators
+labelEx = Label(MainWindow, font="HelveticaNeue 500 bold", bg="royalblue4", fg="crimson", text = "✗", anchor='center')
+labelCheckFlag = 0
+labelExFlag = 0
 
 #**** Muppy***
 '''all_objects = muppy.get_objects()
 sum1 = summary.summarize(all_objects)
 
-summary.print_(sum1)
+summary.#print_(sum1)
 
 dataframes = [ao for ao in all_objects if isinstance(ao, pd.DataFrame)]
 
 for d in dataframes:
-    print (d.columns.values)
-    print (len(d))
+    #print (d.columns.values)
+    #print (len(d))
 '''
 #memory_tracker = tracker.SummaryTracker()
-#memory_tracker.print_diff()
+#memory_tracker.#print_diff()
 # ***** DATA HANDLING *****
 def polling(MainWindow):
     global data1
     global data2
+    global labelCheckFlag
+    global labelExFlag
+
     # ***** Default Values *****
     BATst = ""                          #Weather Station
     photoresistor = 0 
@@ -157,79 +166,94 @@ def polling(MainWindow):
     windSpeed = 0
     windy = (windD,windSpeed,"mi/hr")
     tempData = '0'
-    newData = []
-    
-    labelCheck = Label(MainWindow, font="HelveticaNeue 500 bold", bg="royalblue4", fg="limegreen", text = "✓", anchor='center') #correct and incorrect indicators
-    labelEx = Label(MainWindow, font="HelveticaNeue 500 bold", bg="royalblue4", fg="crimson", text = "✗", anchor='center')
+    newData = []    
 
     #lock.acquire()
     while True:
         data1 = ArduinoFunctions.readSerial(connection1, name1)      # get data from weather station and button box
         data2 = ArduinoFunctions.readSerial(connection2, name2)
         #snapshot1 = tracemalloc.take_snapshot()
-        #print("data1: ", data1, "data2: ", data2)
-        #print('Memory usage (data): {}'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
+        ##print("data1: ", data1, "data2: ", data2)
+        ##print('Memory usage (data): {}'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
         #lock.release()
         #MainWindow.update()
         #MainWindow.update_idletasks()
-        
+        #print("\t\t\t\t Hello!")
+        #print("label Ex: ", labelExFlag, "\tlabel Check: ", labelCheckFlag)
+        if (labelExFlag > 0):
+            labelExFlag = labelExFlag - 1
+        else:
+            labelEx.place_forget()
+            
+        if (labelCheckFlag > 0):
+            labelCheckFlag = labelCheckFlag - 1
+        else:
+            labelCheck.place_forget()
+            
         if (name1 == "Moteino"):
             newData = weatherData(data1)         #BATst, hum, photoresistor, rainy, temp, precipitation, windD, windSpeed, windy                                       # update weather station data values
-            buttonEvent(data2, labelCheck, labelEx)
+            buttonEvent(data2)
         elif (name2 == "Moteino"):
             newData = weatherData(data2)
-            buttonEvent(data1, labelCheck, labelEx)
+            buttonEvent(data1)
         else:
             newData = [0, 0, 0, 0, 0, 0, 0] #in case the weather station is not connected
             
         if (newData != '-1'):   #if newData is valid then update labels
-            #print('newData: ', newData)
-            #print('Memory usage (before): {}'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
+            ##print('newData: ', newData)
+            ##print('Memory usage (before): {}'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
             battStat(newData[0])                      # determine image for battery status and weather condition
-            #print('Memory usage (battStatPolling): {}'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
+            ##print('Memory usage (battStatPolling): {}'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
             weatherStat(newData[1], newData[2], newData[3], newData[6])
-            #print('Memory usage (weatherStatPolling): {}\n'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
+            ##print('Memory usage (weatherStatPolling): {}\n'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
             MainWindow.update()
         
         #snapshot2 = tracemalloc.take_snapshot()
         #top_stats = snapshot2.compare_to(snapshot1, 'lineno')
         
-        #print(" Top 10 Differences ")
+        ##print(" Top 10 Differences ")
         #for stat in top_stats[:10]:
-            #print(stat)
+            ##print(stat)
             
             
-        #memory_tracker.print_diff()
+        #memory_tracker.#print_diff()
 
 # *** Button i/o
-def buttonEvent(data, labelCheck, labelEx):
-    def correct ():
+def buttonEvent(data): 
+    global labelCheckFlag
+    global labelExFlag
+    
+    # *** Feedback Labels
+    #labelCheck = Label(MainWindow, font="HelveticaNeue 500 bold", bg="royalblue4", fg="limegreen", text = "✓", anchor='center') #correct and incorrect indicators
+    #labelEx = Label(MainWindow, font="HelveticaNeue 500 bold", bg="royalblue4", fg="crimson", text = "✗", anchor='center')
+    btnpress = data
+    ##print('Memo/home/pi/Documents/WeatherStationry usage (buttonEvent): {}'.format(resource.getrusage(resource.RUSAGE_SELF)))
+    #print("CND = ",cnd)
+    if(btnpress == cnd):#show correct if matches weather condition
+        #print("\t\t\t\t\Correct!")
         labelCheck.place(x=width_value/3, y=height_value/5)    #place checkmark or ex at about center of the screen
         #labelCheck.place_forget()
-        MainWindow.after(200, labelCheck.place_forget)
+        #labelCheck.after(2000, labelCheck.place_forget())
+        labelCheckFlag = 10
         #play(correctSound)
-    def incorrect ():
+    elif(btnpress != '-1' and btnpress != '0'):
         #play(incorrectSound)
         labelEx.place(x=width_value/3, y=height_value/5)
         #labelEx.place_forget()
-        MainWindow.after(200, labelEx.place_forget)
-
-    btnpress = data
-    #print('Memo/home/pi/Documents/WeatherStationry usage (buttonEvent): {}'.format(resource.getrusage(resource.RUSAGE_SELF)))
-    if(btnpress == cnd):#show correct if matches weather condition
-        correct()
-    elif(btnpress == '1' or btnpress == '2' or btnpress == '4' or btnpress == '8'):
-        incorrect()
+        #MainWindow.after(2000, labelEx.place_forget())
+        labelExFlag = 10
     elif(btnpress == '10'):
         altTab.altTab()
     else:
         return
+    
+    
     return
 
 # *** Puts battery status icon on top right of page
 def battStat(BATst):
     global battPic
-    ##print("Battery Level: ", BATst)
+    ###print("Battery Level: ", BATst)
     #newbattPic = 0
     #if (data != '-1'):
     if(BATst == "100%"):
@@ -251,21 +275,21 @@ def battStat(BATst):
         #try:
         #    battStatLabel.destroy()
         #except NameError:
-        #    print("Oops, no variable defined yet!")
-        print("UPDATED!!!\n")
+        #    #print("Oops, no variable defined yet!")
+        #print("UPDATED!!!\n")
         battPic = newbattPic
         #battStatLabel = Label(MainWindow, relief="sunken", image=battPic)
         battStatLabel.configure(image=battPic)
         #battStatLabel.forget()
     '''
-    #print('Memory usage (battStat): {}\n'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
+    ##print('Memory usage (battStat): {}\n'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
 # *** weather station data handling
 def weatherData(data1):
     BATst = '0'
-    #print('Memory usage (weatherDataStart): {}'.format(resource.getrusage(resource.RUSAGE_SELF)))
+    ##print('Memory usage (weatherDataStart): {}'.format(resource.getrusage(resource.RUSAGE_SELF)))
     if (data1[0]!='-1'):               #Only change values when receiving new data
         BATst = ArduinoFunctions.getBatStatus(int(data1[6]))
-        ##print("Moteino Battery Level: ",BATst)
+        ###print("Moteino Battery Level: ",BATst)
         hum = float(data1[1])                                                  #humidity
         photoresistor = int(data1[7])                                        #photoresistor
         rainy = ArduinoFunctions.getRainVolume(float(data1[2]))                #precipitation
@@ -273,7 +297,7 @@ def weatherData(data1):
             temp = round(float(data1[0]) * 9/5 + 32, 0)                            #temperature converted from C to F, rounded
         except(ValueError):
             temp = round(float(data1[0][-4:]) * 9/5 + 32, 0)
-            print("Weather Data Error!")
+            #print("Weather Data Error!")
         precipitation = ArduinoFunctions.getSnow(int(data1[5]), temp, hum)   #snow fall
         windD = ArduinoFunctions.getWindDirection(int(data1[4]))             #wind direction
         windSpeed = round(ArduinoFunctions.getWindSpeed(int(data1[3])), 0)   #wind speed
@@ -283,10 +307,10 @@ def weatherData(data1):
         hum_text.set("Humidity:{}".format(hum))
         temp_text.set("Temperature:{}°F".format(temp))
         windy_text.set("wind:{}{}{}".format(*windy))
-        #print('Memory usage (weatherData): {}\n'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
-        #print(BATst, hum, photoresistor, rainy, temp, precipitation, windD, windSpeed, windy)
+        ##print('Memory usage (weatherData): {}\n'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
+        ##print(BATst, hum, photoresistor, rainy, temp, precipitation, windD, windSpeed, windy)
         #rain_text.set("Rain:{}".format(rainy))
-        #print('Memory usage (weatherDataEnd): {}'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
+        ##print('Memory usage (weatherDataEnd): {}'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
         return BATst, hum, photoresistor, rainy, temp, precipitation, windD, windSpeed, windy
     
     return data1[0]
@@ -294,7 +318,7 @@ def weatherData(data1):
 # *** Puts weather condition icon on left and places the corresponding text under date/time
 def weatherStat(hum, photoresistor, rainy, precipitation):
     global cnd
-    #print("weather photoresistor: " , photoresistor)
+    ##print("weather photoresistor: " , photoresistor)
     if photoresistor < 400:                                                                     #sunny condition
         if (cnd != '2'):         #if the same condition is repeated, then don't update
             weatherPic.configure(image=sunnyPic)
@@ -320,9 +344,10 @@ def weatherStat(hum, photoresistor, rainy, precipitation):
             
             cnd = '1'
     else:
-        print ("Error")
-    print('Memory usage (weatherStat): {}\n'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
-    #print('Memory usage (weatherStat): {}'.format(resource.getrusage(resource.RUSAGE_SELF)))
+        return
+        #print ("Error")
+    #print('Memory usage (weatherStat): {}\n'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
+    ##print('Memory usage (weatherStat): {}'.format(resource.getrusage(resource.RUSAGE_SELF)))
 # ***Humidity, temp and wind speed/direction always placed at bottom of the grid
 hum_text = tk.StringVar(MainWindow)
 humidity = Label(MainWindow, bd=4, relief="sunken", font="HelveticaNeue 40 normal", bg="royalblue4", fg="deepskyblue", textvariable=hum_text, width=15)
