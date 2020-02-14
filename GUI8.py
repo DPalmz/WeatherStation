@@ -4,7 +4,6 @@ from PIL import ImageTk,Image
 from datetime import date
 from pydub import AudioSegment
 from pydub.playback import play
-#from threading import Lock, Thread
 import ArduinoFunctions
 import altTab
 import Feedback
@@ -12,10 +11,9 @@ import os
 import resource
 import sys
 import time as tm
-import tracemalloc
+#import tracemalloc
 
 #tracemalloc.start()
-sys.path.append(os.path.abspath(r"/home/pi/Documents/WeatherStation"))
 
 # ***** Default Values *****
 BATst = ""                          #Weather Station
@@ -27,14 +25,9 @@ precipitation = 0
 windD = "??"
 windSpeed = 0
 windy = (windD,windSpeed,"mi/hr")
-#results = [BATst, hum, photoresistor, rainy, temp, precipitation, windD, windSpeed]
-
 btnpress = 0                          #Button Box input and weather condition value to compare with
 cnd = 0
-#data1 = 0                             #Data in from weather station and button box (undetermined)
-#data2 = 0
 counter = 0
-#lock = Lock()                         #Lock for multithreading
 
 #correctSound = AudioSegment.from_wav(sys.path[0] + "/Sounds/correct_Current.wav")
 #incorrectSound = AudioSegment.from_wav(sys.path[0] + "/Sounds/wrong_Current.wav")
@@ -53,14 +46,23 @@ width_value = MainWindow.winfo_screenwidth()
 height_value = MainWindow.winfo_screenheight()
 #MainWindow.geometry("%dx%d+0+0" %(width_value,height_value))
 
+'''
 Can=Canvas(MainWindow, width=width_value, height=height_value, bg="blue")   # base window
 Can.place(x=0, y=0)
-img = Image.open(r"/home/pi/Documents/WeatherStation/Pictures/BGW.gif").resize((width_value+10,height_value+10),Image.ANTIALIAS)
+img = Image.open(sys.path[0] + "/Pictures/BGW.gif").resize((width_value+10,height_value+10),Image.ANTIALIAS)
 pic = ImageTk.PhotoImage(img)                                               # background image
 Can.create_image(-5, -5, image=pic, anchor=NW)
+'''
+
+#canvas alternative
+bgImg = Image.open(sys.path[0] + "/Pictures/BGW.gif")
+bgImg = bgImg.resize((width_value+10,height_value+10),Image.ANTIALIAS)
+bgPic = ImageTk.PhotoImage(bgImg)
+bgLabel = Label(MainWindow, relief = "flat", image=bgPic)
+bgLabel.place(x = 0, y = 0)
 
 # *** Coastal Connections logo
-img2 = Image.open(r"/home/pi/Documents/WeatherStation/Pictures/coast.gif").resize((506,210),Image.ANTIALIAS)
+img2 = Image.open(sys.path[0] + "/Pictures/coast.gif").resize((506,210),Image.ANTIALIAS)
 coast = ImageTk.PhotoImage(img2)
 coast1 = Label(MainWindow, image=coast)
 coast1.grid(sticky="ns") 
@@ -72,23 +74,23 @@ label0.grid(row=0, column=1, columnspan=2, sticky="n")
 #print("Title")
 
 # *** Default Battery Status Images
-battPic100 = ImageTk.PhotoImage(Image.open("/home/pi/Documents/WeatherStation/Pictures/Batt_Full.gif"))
-battPic80 = ImageTk.PhotoImage(Image.open("/home/pi/Documents/WeatherStation/Pictures/Batt_75.gif"))
-battPic50 = ImageTk.PhotoImage(Image.open("/home/pi/Documents/WeatherStation/Pictures/Batt_50.gif"))
-battPic20 = ImageTk.PhotoImage(Image.open("/home/pi/Documents/WeatherStation/Pictures/Batt_25.gif"))
-battPic0 = ImageTk.PhotoImage(Image.open("/home/pi/Documents/WeatherStation/Pictures/Batt_0.gif"))
-battPicOvr = ImageTk.PhotoImage(Image.open("/home/pi/Documents/WeatherStation/Pictures/Batt_Ovr.gif"))
-battPicUnk = ImageTk.PhotoImage(Image.open("/home/pi/Documents/WeatherStation/Pictures/Batt_Unk.gif"))  
+battPic100 = ImageTk.PhotoImage(Image.open(sys.path[0] + "/Pictures/Batt_Full.gif"))
+battPic80 = ImageTk.PhotoImage(Image.open(sys.path[0] + "/Pictures/Batt_75.gif"))
+battPic50 = ImageTk.PhotoImage(Image.open(sys.path[0] + "/Pictures/Batt_50.gif"))
+battPic20 = ImageTk.PhotoImage(Image.open(sys.path[0] + "/Pictures/Batt_25.gif"))
+battPic0 = ImageTk.PhotoImage(Image.open(sys.path[0] + "/Pictures/Batt_0.gif"))
+battPicOvr = ImageTk.PhotoImage(Image.open(sys.path[0] + "/Pictures/Batt_Ovr.gif"))
+battPicUnk = ImageTk.PhotoImage(Image.open(sys.path[0] + "/Pictures/Batt_Unk.gif"))  
 
 battStatLabel = Label(MainWindow, relief="sunken", image=battPicUnk)   #display battery level on top right of screen
 battStatLabel.place(x=width_value-130, y=0)
 #print("Battery Images")
 
 # *** Weather Condition Images
-sunnyPic = PhotoImage(file=r"/home/pi/Documents/WeatherStation/Pictures/sunnyicon2.gif")
-cloudyPic = PhotoImage(file=r"/home/pi/Documents/WeatherStation/Pictures/cloudyicon.gif")
-snowyPic = PhotoImage(file=r"/home/pi/Documents/WeatherStation/Pictures/snowyicon.gif")
-rainyPic = PhotoImage(file=r"/home/pi/Documents/WeatherStation/Pictures/rainyicon.gif")
+sunnyPic = PhotoImage(file=sys.path[0] + "/Pictures/sunnyicon2.gif")
+cloudyPic = PhotoImage(file=sys.path[0] + "/Pictures/cloudyicon.gif")
+snowyPic = PhotoImage(file=sys.path[0] + "/Pictures/snowyicon.gif")
+rainyPic = PhotoImage(file=sys.path[0] + "/Pictures/rainyicon.gif")
 weatherPic = Label(MainWindow, image=sunnyPic)
 weatherPic.grid(row=1, sticky="sw")
 #print("Weather Images")
@@ -128,26 +130,27 @@ DateLabel = Label(f1, bd=4, relief="sunken", font="HelveticaNeue 90 bold", bg="r
 DateLabel.grid(row=1, column=0, columnspan=2, sticky="nwse")
 display_date()
 
-# *** Feedback Labels
-labelCheck = Label(MainWindow, font="HelveticaNeue 500 bold", bg="royalblue4", fg="limegreen", text = "✓", anchor='center') #correct and incorrect indicators
-labelEx = Label(MainWindow, font="HelveticaNeue 500 bold", bg="royalblue4", fg="crimson", text = "✗", anchor='center')
+# *** Humidity, temp and wind speed/direction always placed at bottom of the grid
+hum_text = tk.StringVar(MainWindow)
+humidity = Label(MainWindow, bd=4, relief="sunken", font="HelveticaNeue 40 normal", bg="royalblue4", fg="deepskyblue", textvariable=hum_text, width=15)
+humidity.grid(row=10, column=1, sticky="ew")
+
+temp_text = tk.StringVar(MainWindow)
+temperature = Label(MainWindow, bd=4, relief="sunken", font="HelveticaNeue 40 normal", bg="royalblue4", fg="deepskyblue", textvariable=temp_text)
+temperature.grid(row=10, column=0, sticky="ew")
+
+windy_text = tk.StringVar(MainWindow)
+wind = Label(MainWindow, bd=4, relief="sunken", font="HelveticaNeue 40 normal", bg="royalblue4", fg="deepskyblue", textvariable=windy_text)
+wind.grid(row=10, column=2, sticky="ew")
+
+# *** Feedback Labels (Declared last to appear above other elements)
+labelCheck = Label(MainWindow, font="HelveticaNeue 500 bold", bg="royalblue4", fg="limegreen", text = "✓") #correct and incorrect indicators
+labelEx = Label(MainWindow, font="HelveticaNeue 500 bold", bg="royalblue4", fg="crimson", text = "✗")
+labelCheck.grid(row = 6, column = 1)
+labelEx.grid(row = 6, column = 2)
 labelCheckFlag = 0
 labelExFlag = 0
 
-#**** Muppy***
-'''all_objects = muppy.get_objects()
-sum1 = summary.summarize(all_objects)
-
-summary.#print_(sum1)
-
-dataframes = [ao for ao in all_objects if isinstance(ao, pd.DataFrame)]
-
-for d in dataframes:
-    #print (d.columns.values)
-    #print (len(d))
-'''
-#memory_tracker = tracker.SummaryTracker()
-#memory_tracker.#print_diff()
 # ***** DATA HANDLING *****
 def polling(MainWindow):
     global data1
@@ -168,27 +171,26 @@ def polling(MainWindow):
     tempData = '0'
     newData = []    
 
-    #lock.acquire()
+
     while True:
         data1 = ArduinoFunctions.readSerial(connection1, name1)      # get data from weather station and button box
         data2 = ArduinoFunctions.readSerial(connection2, name2)
         #snapshot1 = tracemalloc.take_snapshot()
         ##print("data1: ", data1, "data2: ", data2)
         ##print('Memory usage (data): {}'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
-        #lock.release()
-        #MainWindow.update()
-        #MainWindow.update_idletasks()
         #print("\t\t\t\t Hello!")
         #print("label Ex: ", labelExFlag, "\tlabel Check: ", labelCheckFlag)
         if (labelExFlag > 0):
             labelExFlag = labelExFlag - 1
         else:
-            labelEx.place_forget()
+            labelEx.grid_forget()
+            #labelEx.place_forget()
             
         if (labelCheckFlag > 0):
             labelCheckFlag = labelCheckFlag - 1
         else:
-            labelCheck.place_forget()
+            labelCheck.grid_forget()
+            #labelCheck.place_forget()
             
         if (name1 == "Moteino"):
             newData = weatherData(data1)         #BATst, hum, photoresistor, rainy, temp, precipitation, windD, windSpeed, windy                                       # update weather station data values
@@ -217,39 +219,7 @@ def polling(MainWindow):
             
             
         #memory_tracker.#print_diff()
-
-# *** Button i/o
-def buttonEvent(data): 
-    global labelCheckFlag
-    global labelExFlag
-    
-    # *** Feedback Labels
-    #labelCheck = Label(MainWindow, font="HelveticaNeue 500 bold", bg="royalblue4", fg="limegreen", text = "✓", anchor='center') #correct and incorrect indicators
-    #labelEx = Label(MainWindow, font="HelveticaNeue 500 bold", bg="royalblue4", fg="crimson", text = "✗", anchor='center')
-    btnpress = data
-    ##print('Memo/home/pi/Documents/WeatherStationry usage (buttonEvent): {}'.format(resource.getrusage(resource.RUSAGE_SELF)))
-    #print("CND = ",cnd)
-    if(btnpress == cnd):#show correct if matches weather condition
-        #print("\t\t\t\t\Correct!")
-        labelCheck.place(x=width_value/3, y=height_value/5)    #place checkmark or ex at about center of the screen
-        #labelCheck.place_forget()
-        #labelCheck.after(2000, labelCheck.place_forget())
-        labelCheckFlag = 10
-        #play(correctSound)
-    elif(btnpress != '-1' and btnpress != '0'):
-        #play(incorrectSound)
-        labelEx.place(x=width_value/3, y=height_value/5)
-        #labelEx.place_forget()
-        #MainWindow.after(2000, labelEx.place_forget())
-        labelExFlag = 10
-    elif(btnpress == '10'):
-        altTab.altTab()
-    else:
-        return
-    
-    
-    return
-
+            
 # *** Puts battery status icon on top right of page
 def battStat(BATst):
     global battPic
@@ -270,19 +240,44 @@ def battStat(BATst):
         battStatLabel.configure(image=battPicOvr)
     else:
         battStatLabel.configure(image=battPicUnk)              
-    '''
-    if newbattPic != battPic and newbattPic != 0:
-        #try:
-        #    battStatLabel.destroy()
-        #except NameError:
-        #    #print("Oops, no variable defined yet!")
-        #print("UPDATED!!!\n")
-        battPic = newbattPic
-        #battStatLabel = Label(MainWindow, relief="sunken", image=battPic)
-        battStatLabel.configure(image=battPic)
-        #battStatLabel.forget()
-    '''
     ##print('Memory usage (battStat): {}\n'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
+
+# *** Button i/o
+def buttonEvent(data): 
+    global labelCheckFlag
+    global labelExFlag
+    
+    # *** Feedback Labels
+    #labelCheck = Label(MainWindow, font="HelveticaNeue 500 bold", bg="royalblue4", fg="limegreen", text = "✓", anchor='center') #correct and incorrect indicators
+    #labelEx = Label(MainWindow, font="HelveticaNeue 500 bold", bg="royalblue4", fg="crimson", text = "✗", anchor='center')
+    btnpress = data
+    ##print('Memo/home/pi/Documents/WeatherStationry usage (buttonEvent): {}'.format(resource.getrusage(resource.RUSAGE_SELF)))
+    #print("CND = ",cnd)
+    if(btnpress == cnd):#show correct if matches weather condition
+        #print("\t\t\t\t\Correct!")
+        #labelCheck.place(x=width_value/3, y=height_value/5)    #place checkmark or ex at about center of the screen
+        labelCheck.grid(row=2, column=2, rowspan = 10, columnspan = 10)
+        print("check placed")
+        #labelCheck.place_forget()
+        #labelCheck.after(2000, labelCheck.place_forget())
+        labelCheckFlag = 10
+        #print ("label check flag: ", labelCheckFlag)
+        #play(correctSound)
+    elif(btnpress == '10'):
+        altTab.altTab()
+    elif(btnpress != '-1' and btnpress != '0'):
+        #play(incorrectSound)
+        #labelEx.place(x=width_value/3, y=height_value/5)
+        labelCheck.grid(row=2, column=2, rowspan = 10, columnspan = 10)
+        print("ex placed")
+        #labelEx.place_forget()
+        #MainWindow.after(2000, labelEx.place_forget())
+        labelExFlag = 10
+    else:
+        return
+    MainWindow.update
+    return
+
 # *** weather station data handling
 def weatherData(data1):
     BATst = '0'
@@ -348,18 +343,6 @@ def weatherStat(hum, photoresistor, rainy, precipitation):
         #print ("Error")
     #print('Memory usage (weatherStat): {}\n'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
     ##print('Memory usage (weatherStat): {}'.format(resource.getrusage(resource.RUSAGE_SELF)))
-# ***Humidity, temp and wind speed/direction always placed at bottom of the grid
-hum_text = tk.StringVar(MainWindow)
-humidity = Label(MainWindow, bd=4, relief="sunken", font="HelveticaNeue 40 normal", bg="royalblue4", fg="deepskyblue", textvariable=hum_text, width=15)
-humidity.grid(row=10, column=1, sticky="ew")
-
-temp_text = tk.StringVar(MainWindow)
-temperature = Label(MainWindow, bd=4, relief="sunken", font="HelveticaNeue 40 normal", bg="royalblue4", fg="deepskyblue", textvariable=temp_text)
-temperature.grid(row=10, column=0, sticky="ew")
-
-windy_text = tk.StringVar(MainWindow)
-wind = Label(MainWindow, bd=4, relief="sunken", font="HelveticaNeue 40 normal", bg="royalblue4", fg="deepskyblue", textvariable=windy_text)
-wind.grid(row=10, column=2, sticky="ew")
 
 # *** continuously poll weather data and button presses and update gui
 polling(MainWindow)              

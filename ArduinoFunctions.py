@@ -73,16 +73,17 @@ def getSnow(an, temp, hum):
 def readSerial(connection, name):
     values = ['-1']
     if name == "Moteino":                                #for Moteino connection
-        print("Moteino buffer: ", connection.in_waiting)
+        #print("Moteino buffer: ", connection.in_waiting)
         if(connection.in_waiting>0):                     
               
-            values = []
+            values = connection.readline().decode().split()
+
             #print("At Moteino")                   #create an empty list
             #connection.flushInput()
-            for i in range(8):                                #loop n-1 times for most data
+            '''for i in range(8):                                #loop n-1 times for most data
                 values.append(connection.readline())        #read data from the connection
                 values[i] = values[i].decode()                #translate bytes to string            
-                values[i] = (values[i][:-2])               #convert to int, get rid of \r\n
+                values[i] = (values[i][:-2])               #convert to int, get rid of \r\n'''
         #values.append(connection.readline())            #read data from the connection
         #values[i] = values[i].decode()                    #translate bytes to string
         #values[i] = float(values[LAST])                    #convert to float (battery Voltage)
@@ -91,7 +92,7 @@ def readSerial(connection, name):
         else:
             values = ["-1"]     
     elif name == "CC1101":                                #for CC1101 connection
-        print("CC1101 buffer: ", connection.in_waiting)
+        #print("CC1101 buffer: ", connection.in_waiting)
         if(connection.in_waiting>0):                     
             
             #print("at cc")
@@ -103,7 +104,7 @@ def readSerial(connection, name):
         #    values = None                                    #set to null
         else:
             values = '-1'
-    print('Memory usage (readSerial): {}\n'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
+    #print('Memory usage (readSerial): {}\n'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
     return values                                        #return values
 
 #read a line from the serial connection and convert it from bytes
