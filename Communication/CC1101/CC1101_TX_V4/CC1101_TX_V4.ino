@@ -90,7 +90,7 @@ void loop()
 	{
 		//Serial.println("No reply, is cc110_server running?");
 	}
- delay(400);
+ delay(500);
 }
 
 void t4(void)

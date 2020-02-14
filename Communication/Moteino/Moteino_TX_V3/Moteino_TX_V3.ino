@@ -85,7 +85,7 @@ void setup()
 //  pinMode(4, OUTPUT);
 //  digitalWrite(4, HIGH);
   
-  Serial.begin(9600);
+  Serial.begin(38400);
   do{
       Serial.println("Moteino");
       blab = Serial.read();
@@ -163,34 +163,41 @@ void loop()
       {
        // Serial.println((int)an1.b[0]);
         
-        Serial.println(temp.n);
-        Serial.println(hum.n);
-        Serial.println(rain.n);
+        Serial.print(temp.n);
+        Serial.print("\t");
+        Serial.print(hum.n);
+        Serial.print("\t");
+        Serial.print(rain.n);
+        Serial.print("\t");
        // Serial.print("got request from : 0x");
        // Serial.print(from, HEX);
        // Serial.print(": ");
        // Serial.println((char*)buf);
-       Serial.println(spe.n);
-       Serial.println(wind.n);
-       Serial.println(pre.n);
-       Serial.println(v.n);
+       Serial.print(spe.n);
+       Serial.print("\t");
+       Serial.print(wind.n);
+       Serial.print("\t");
+       Serial.print(pre.n);
+       Serial.print("\t");
+       Serial.print(v.n);
+       Serial.print("\t");
        Serial.println(r.n);
        //Serial.println("");
       }
       else
       {
-        Serial.println("No reply, is rf95_reliable_datagram_server running?");
+        //Serial.println("No reply, is rf95_reliable_datagram_server running?");
       }
     }
     else
-      Serial.println("sendtoWait failed");
+      //Serial.println("sendtoWait failed");
     
     resend = 300000; // 5 min in milliseconds
     //if ((millis() - starttime) > resend){ //needed to use resend differently here
       //state = 1;
       
     //}
-    delay(800);
+    delay(2000);
   }
   /*else if (state == 1){
     resend = 10000;//3600000; // 1 hr in milliseconds

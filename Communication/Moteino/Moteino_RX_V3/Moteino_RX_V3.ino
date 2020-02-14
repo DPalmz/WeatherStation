@@ -200,7 +200,10 @@ void loop()
       // Send a reply back to the originator client
       if (!manager.sendtoWait(data, sizeof(data), from))
         Serial.println("sendtoWait failed");
-    }   
+    }
+  rain.n = 0;
+  spe.n = 0;   
+  delay(300);
 }
 
 //Wind tick intterupt sequence. Delay loop included
