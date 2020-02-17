@@ -144,10 +144,8 @@ wind = Label(MainWindow, bd=4, relief="sunken", font="HelveticaNeue 40 normal", 
 wind.grid(row=10, column=2, sticky="ew")
 
 # *** Feedback Labels (Declared last to appear above other elements)
-labelCheck = Label(MainWindow, font="HelveticaNeue 500 bold", bg="royalblue4", fg="limegreen", text = "✓") #correct and incorrect indicators
-labelEx = Label(MainWindow, font="HelveticaNeue 500 bold", bg="royalblue4", fg="crimson", text = "✗")
+labelCheck = Label(MainWindow, font="HelveticaNeue 500 bold", bg="royalblue4", fg="limegreen", text = "✓") #Feedback indicator
 labelCheckFlag = 0
-labelExFlag = 0
 
 # ***** DATA HANDLING *****
 def polling(MainWindow):
@@ -176,12 +174,6 @@ def polling(MainWindow):
         #snapshot1 = tracemalloc.take_snapshot()
         #print("data1: ", data1, "data2: ", data2)
         #print('Memory usage (data): {}'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
-        print("label Ex: ", labelExFlag, "\tlabel Check: ", labelCheckFlag)
-        if (labelExFlag > 0):
-            labelExFlag = labelExFlag - 1
-        else:
-            labelEx.place_forget()
-            
         if (labelCheckFlag > 0):
             labelCheckFlag = labelCheckFlag - 1
         else:
@@ -196,7 +188,6 @@ def polling(MainWindow):
         else:
             newData = [0, 0, 0, 0, 0, 0, 0] #in case the weather station is not connected
            
-        print('newData: ', newData)
         if (newData != '-1'):   #if newData is valid then update labels
             #print('newData: ', newData)
             #print('Memory usage (before): {}'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
@@ -240,34 +231,25 @@ def battStat(BATst):
 # *** Button i/o
 def buttonEvent(data): 
     global labelCheckFlag
-    global labelExFlag
     global cnd
-    
-    # *** Feedback Labels
-    #labelCheck = Label(MainWindow, font="HelveticaNeue 500 bold", bg="royalblue4", fg="limegreen", text = "✓", anchor='center') #correct and incorrect indicators
-    #labelEx = Label(MainWindow, font="HelveticaNeue 500 bold", bg="royalblue4", fg="crimson", text = "✗", anchor='center')
+
     btnpress = data
     #print('Memo/home/pi/Documents/WeatherStationry usage (buttonEvent): {}'.format(resource.getrusage(resource.RUSAGE_SELF)))
-    print("CND = ",cnd)
-    print("btnpress = ", btnpress)
+    print("button press = ", btnpress, "cnd = ", cnd)
     if(btnpress == cnd):#show correct if matches weather condition
-        print("\t\t\t\t\Correct!")
+        #play(correctSound) 
+        labelCheck.configure(fg="limegreen", text="✓")
         labelCheck.place(x=width_value/3, y=height_value/5)    #place checkmark or ex at about center of the screen
         print("check placed")
-        #labelCheck.place_forget()
-        #labelCheck.after(2000, labelCheck.place_forget())
         labelCheckFlag = 10
-        print ("label check flag: ", labelCheckFlag)
-        #play(correctSound)
     elif(btnpress == '10'):
         altTab.altTab()
     elif(btnpress != '-1' and btnpress != '0'):
-        #play(incorrectSound)
-        labelEx.place(x=width_value/3, y=height_value/5)
+        #play(incorrectSound)   
+        labelCheck.configure(fg="crimson", text = "✗")
+        labelCheck.place(x=width_value/3, y=height_value/5)
         print("ex placed")
-        #labelEx.place_forget()
-        #MainWindow.after(2000, labelEx.place_forget())
-        labelExFlag = 10
+        labelCheckFlag = 10
     else:
         return
     MainWindow.update
@@ -279,7 +261,7 @@ def weatherData(data1):
     #print('Memory usage (weatherDataStart): {}'.format(resource.getrusage(resource.RUSAGE_SELF)))
     if (data1[0]!='-1'):               #Only change values when receiving new data
         BATst = ArduinoFunctions.getBatStatus(int(data1[6]))
-        ##print("Moteino Battery Level: ",BATst)
+        #print("Moteino Battery Level: ",BATst)
         hum = float(data1[1])                                                  #humidity
         photoresistor = int(data1[7])                                        #photoresistor
         rainy = ArduinoFunctions.getRainVolume(float(data1[2]))                #precipitation
@@ -296,10 +278,8 @@ def weatherData(data1):
             
         hum_text.set("Humidity:{}".format(hum))
         temp_text.set("Temperature:{}°F".format(temp))
-        windy_text.set("wind:{}{}{}".format(*windy))
-        #print('Memory usage (weatherData): {}\n'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
+        windy_text.set("Wind:{}{}{}".format(*windy))
         #print(BATst, hum, photoresistor, rainy, temp, precipitation, windD, windSpeed, windy)
-        #rain_text.set("Rain:{}".format(rainy))
         #print('Memory usage (weatherDataEnd): {}'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
         return BATst, hum, photoresistor, rainy, temp, precipitation, windD, windSpeed, windy
     
@@ -336,8 +316,7 @@ def weatherStat(hum, photoresistor, rainy, precipitation):
     else:
         return
         print ("Error")
-    print('Memory usage (weatherStat): {}\n'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
-    #print('Memory usage (weatherStat): {}'.format(resource.getrusage(resource.RUSAGE_SELF)))
+    #print('Memory usage (weatherStat): {}\n'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
 
 # *** continuously poll weather data and button presses and update gui
 polling(MainWindow)              
