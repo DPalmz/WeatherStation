@@ -1,3 +1,10 @@
+###############################################################################
+##	Program: Arduino Functions.py
+##	Authors: Felipe Loera, Dylan Palmer, Brandon Lee
+##	Purpose: Provide GUI3.py with functions for communication with arduinos
+##			as well as to interpret the received data.
+###############################################################################
+
 from serial import *	#import serial library functions
 from sys import exit	#import exit from sys library
 
