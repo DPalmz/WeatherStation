@@ -75,10 +75,8 @@ def readSerial(connection, name):
     if name == "Moteino":                                #for Moteino connection
         #print("Moteino buffer: ", connection.in_waiting)
         if(connection.in_waiting>0):                     
-              
-            values = connection.readline().decode().split()
-
-            #print("At Moteino")                   #create an empty list
+            print('Moteino')
+            values = connection.readline().decode().split()             
             #connection.flushInput()
             '''for i in range(8):                                #loop n-1 times for most data
                 values.append(connection.readline())        #read data from the connection
@@ -94,8 +92,7 @@ def readSerial(connection, name):
     elif name == "CC1101":                                #for CC1101 connection
         #print("CC1101 buffer: ", connection.in_waiting)
         if(connection.in_waiting>0):                     
-            
-            #print("at cc")
+            print('CC1101')
             #connection.flushInput()
             values = connection.readline()                    #read a byte from the connection
             values = values.decode()[:-2]
@@ -140,4 +137,4 @@ def connectSerial(counter):
         connection.write(bytes([254]))                            #send 0xFE
         garbage = connection.readline().decode()
     #connection.timeout(0)    
-    return (connection, name)                            #return port and device name
+    return (connection, name, i)                            #return port and device name
