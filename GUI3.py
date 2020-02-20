@@ -151,6 +151,7 @@ labelCheckFlag = 0
 def polling(MainWindow):
     global data1
     global data2
+    global timeOut
     global labelCheckFlag
     global labelExFlag
 
@@ -165,20 +166,29 @@ def polling(MainWindow):
     windSpeed = 0
     windy = (windD,windSpeed,"mi/hr")
     tempData = '0'
-    newData = []    
-
-
+    newData = []
+    
+    cur_Time = tm.process_time()
+    timeOut = tm.process_time()
     while True:
         data1 = ArduinoFunctions.readSerial(connection1, name1)      # get data from weather station and button box
         data2 = ArduinoFunctions.readSerial(connection2, name2)
         #snapshot1 = tracemalloc.take_snapshot()
         #print("data1: ", data1, "data2: ", data2)
         #print('Memory usage (data): {}'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
+        '''
         if (labelCheckFlag > 0):
             labelCheckFlag = labelCheckFlag - 1
         else:
             labelCheck.place_forget()
-            print("Forget that!")
+            #print("Forget that!")
+        '''
+        cur_Time = tm.process_time()
+        if ((cur_Time > (timeOut + 0.3)) and labelCheckFlag > 0):
+            labelCheck.place_forget()
+            labelCheckFlag = 0
+            #print("forgot the label at: ", cur_Time)
+        
         if (name1 == "Moteino"):
             newData = weatherData(data1)         #BATst, hum, photoresistor, rainy, temp, precipitation, windD, windSpeed, windy                                       # update weather station data values
             buttonEvent(data2)
@@ -196,6 +206,8 @@ def polling(MainWindow):
             weatherStat(newData[1], newData[2], newData[3], newData[6])
             #print('Memory usage (weatherStatPolling): {}\n'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
             MainWindow.update()
+        
+        #print ("cur_Time", cur_Time, "timeOut", timeOut, "labelCheckFlag", labelCheckFlag)
         
         #snapshot2 = tracemalloc.take_snapshot()
         #top_stats = snapshot2.compare_to(snapshot1, 'lineno')
@@ -229,29 +241,38 @@ def battStat(BATst):
     #print('Memory usage (battStat): {}\n'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
 
 # *** Button i/o
-def buttonEvent(data): 
-    global labelCheckFlag
+def buttonEvent(data):
     global cnd
-
+    global labelCheckFlag
+    global timeOut
+    
     btnpress = data
     #print('Memo/home/pi/Documents/WeatherStationry usage (buttonEvent): {}'.format(resource.getrusage(resource.RUSAGE_SELF)))
-    print("button press = ", btnpress, "cnd = ", cnd)
+    #print("button press = ", btnpress, "cnd = ", cnd)
     if(btnpress == cnd):#show correct if matches weather condition
         #play(correctSound) 
         labelCheck.configure(fg="limegreen", text="✓")
         labelCheck.place(x=width_value/3, y=height_value/5)    #place checkmark or ex at about center of the screen
-        print("check placed")
-        labelCheckFlag = 100
+        #print("check placed")
+        #print("button press = ", btnpress, "cnd = ", cnd)
+        timeOut = tm.process_time()
+        #print("Correct label time: ", timeOut)
+        labelCheckFlag = 1
     elif(btnpress == '10'):
         altTab.altTab()
+        #print("button press = ", btnpress, "cnd = ", cnd)
     elif(btnpress != '-1' and btnpress != '0'):
         #play(incorrectSound)   
         labelCheck.configure(fg="crimson", text = "✗")
         labelCheck.place(x=width_value/3, y=height_value/5)
-        print("ex placed")
-        labelCheckFlag = 100
+        #print("ex placed")
+        #print("button press = ", btnpress, "cnd = ", cnd)
+        timeOut = tm.process_time()
+        #print("Incorrect label time: ", timeOut)
+        labelCheckFlag = 1
     else:
         return
+    #print ("timeOut", timeOut, "labelCheckFlag", labelCheckFlag)
     MainWindow.update
     return
 
