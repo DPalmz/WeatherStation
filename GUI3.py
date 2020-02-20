@@ -178,7 +178,7 @@ def polling(MainWindow):
             labelCheckFlag = labelCheckFlag - 1
         else:
             labelCheck.place_forget()
-        
+            print("Forget that!")
         if (name1 == "Moteino"):
             newData = weatherData(data1)         #BATst, hum, photoresistor, rainy, temp, precipitation, windD, windSpeed, windy                                       # update weather station data values
             buttonEvent(data2)
@@ -241,7 +241,7 @@ def buttonEvent(data):
         labelCheck.configure(fg="limegreen", text="✓")
         labelCheck.place(x=width_value/3, y=height_value/5)    #place checkmark or ex at about center of the screen
         print("check placed")
-        labelCheckFlag = 10
+        labelCheckFlag = 100
     elif(btnpress == '10'):
         altTab.altTab()
     elif(btnpress != '-1' and btnpress != '0'):
@@ -249,7 +249,7 @@ def buttonEvent(data):
         labelCheck.configure(fg="crimson", text = "✗")
         labelCheck.place(x=width_value/3, y=height_value/5)
         print("ex placed")
-        labelCheckFlag = 10
+        labelCheckFlag = 100
     else:
         return
     MainWindow.update
