@@ -95,6 +95,13 @@ weatherPic = Label(MainWindow, image=sunnyPic)
 weatherPic.grid(row=1, sticky="sw")
 print("Weather Images")
 
+# *** this function calls the time libary which will be used to create a dyanmic digital clock
+def display_time():
+    current_time= tm.strftime('%I:%M %p')
+    #labelTime['text'] = current_time
+    time_text.set(current_time)
+    MainWindow.after(1000,display_time)
+
 # *** Clock/Date
 # *** f1 is a frame to add a grid within a single cell - aligns time, date, and weather condition text
 f1 = Frame(MainWindow)
@@ -134,7 +141,6 @@ display_date()
 hum_text = tk.StringVar(MainWindow)
 humidity = Label(MainWindow, bd=4, relief="sunken", font="HelveticaNeue 40 normal", bg="royalblue4", fg="deepskyblue", textvariable=hum_text, width=15)
 humidity.grid(row=10, column=1, sticky="ew")
-
 temp_text = tk.StringVar(MainWindow)
 temperature = Label(MainWindow, bd=4, relief="sunken", font="HelveticaNeue 40 normal", bg="royalblue4", fg="deepskyblue", textvariable=temp_text)
 temperature.grid(row=10, column=0, sticky="ew")
@@ -178,7 +184,7 @@ def polling(MainWindow):
             labelCheckFlag = labelCheckFlag - 1
         else:
             labelCheck.place_forget()
-            print("Forget that!")
+            
         if (name1 == "Moteino"):
             newData = weatherData(data1)         #BATst, hum, photoresistor, rainy, temp, precipitation, windD, windSpeed, windy                                       # update weather station data values
             buttonEvent(data2)
@@ -235,21 +241,24 @@ def buttonEvent(data):
 
     btnpress = data
     #print('Memo/home/pi/Documents/WeatherStationry usage (buttonEvent): {}'.format(resource.getrusage(resource.RUSAGE_SELF)))
-    print("button press = ", btnpress, "cnd = ", cnd)
+    #print("button press = ", btnpress, "cnd = ", cnd)
     if(btnpress == cnd):#show correct if matches weather condition
         #play(correctSound) 
         labelCheck.configure(fg="limegreen", text="✓")
         labelCheck.place(x=width_value/3, y=height_value/5)    #place checkmark or ex at about center of the screen
-        print("check placed")
-        labelCheckFlag = 100
+        #print("check placed")
+        print("button press = ", btnpress, "cnd = ", cnd)
+        labelCheckFlag = 50
     elif(btnpress == '10'):
         altTab.altTab()
+        print("button press = ", btnpress, "cnd = ", cnd)
     elif(btnpress != '-1' and btnpress != '0'):
         #play(incorrectSound)   
         labelCheck.configure(fg="crimson", text = "✗")
         labelCheck.place(x=width_value/3, y=height_value/5)
-        print("ex placed")
-        labelCheckFlag = 100
+        #print("ex placed")
+        print("button press = ", btnpress, "cnd = ", cnd)
+        labelCheckFlag = 50
     else:
         return
     MainWindow.update
