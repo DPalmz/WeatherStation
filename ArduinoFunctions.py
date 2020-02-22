@@ -15,11 +15,28 @@ directions = {
     462:    "NE",
     91:     "E ",
     183:    "SE",
-    287:    "S ",
+    286:    "S ",
     631:    "SW",
     945:    "W ",
     887:    "NW"
 }
+def getWindD(windD):
+    if windD is range(768, 808):
+        return "N"
+    elif windD is range(442, 482):
+        return "NE"
+    elif windD is range(71, 111):
+        return "E"
+    elif windD is range(163, 203):
+        return "SE"
+    elif windD is range(267, 307):
+        return "S"
+    elif windD is range(611, 651):
+        return "SW"
+    elif windD is range(925, 965):
+        return "W"
+    elif windD is range(867, 907):
+        return "NW"
 
 #determine aproximate state of battery
 def getBatStatus(an):
@@ -47,8 +64,10 @@ def getWindSpeed(ticks):
     return ticks * 1.492
 
 #multiple ticks by volume factor in inches
-def getRainVolume(ticks):
-    return ticks * .011
+def getRainVolume(ticks, oldTicks):
+    avg = (ticks * 0.2 + oldTicks * 0.8)
+    #return ticks * .011
+    return avg
 
 #return corresponding direction given reading
 def getWindDirection(an):
@@ -56,11 +75,11 @@ def getWindDirection(an):
 
 #does comparisons for snow estimation
 def getSnow(an, temp, hum):
-    if an > 680 and temp < 0:                                   #sensor and temp comp
+    if an > 680 and temp < 32:                                   #sensor and temp comp
         reading = "freezing, possible sleet"                    #corresponding message
-    elif an > 680 and temp < 13:                                #sensor and temp comp
+    elif an > 680 and temp < 40:                                #sensor and temp comp
         reading = "dry and cold"                                #corresponding message
-    elif an < 680 and ((temp < 0 and hum < 30) or temp < -6):   #sensor and temp comp
+    elif an < 680 and ((temp < 32 and hum < 30) or temp < -21):   #sensor and temp comp
         reading = "possible snow"                               #corresponding message
     else:                                                       #otherwise
         reading = "no snow, not cold"                           #corresponding message
