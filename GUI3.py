@@ -29,8 +29,8 @@ btnpress = 0                          #Button Box input and weather condition va
 cnd = 0
 counter = 0
 
-#correctSound = AudioSegment.from_wav(sys.path[0] + "/Sounds/correct_Current.wav")
-#incorrectSound = AudioSegment.from_wav(sys.path[0] + "/Sounds/wrong_Current.wav")
+correctSound = AudioSegment.from_wav(sys.path[0] + "/Sounds/correct_Current.wav")
+incorrectSound = AudioSegment.from_wav(sys.path[0] + "/Sounds/wrong_Current.wav")
 
 # *** Establish connection
 connection1, name1, counter = ArduinoFunctions.connectSerial(counter) #open serial ports for button box and weather station
@@ -250,7 +250,7 @@ def buttonEvent(data):
     #print('Memo/home/pi/Documents/WeatherStationry usage (buttonEvent): {}'.format(resource.getrusage(resource.RUSAGE_SELF)))
     #print("button press = ", btnpress, "cnd = ", cnd)
     if(btnpress == cnd):#show correct if matches weather condition
-        #play(correctSound) 
+        play(correctSound) 
         labelCheck.configure(fg="limegreen", text="✓")
         labelCheck.place(x=width_value/3, y=height_value/5)    #place checkmark or ex at about center of the screen
         #print("check placed")
@@ -262,7 +262,7 @@ def buttonEvent(data):
         altTab.altTab()
         #print("button press = ", btnpress, "cnd = ", cnd)
     elif(btnpress != '-1' and btnpress != '0'):
-        #play(incorrectSound)   
+        play(incorrectSound)   
         labelCheck.configure(fg="crimson", text = "✗")
         labelCheck.place(x=width_value/3, y=height_value/5)
         #print("ex placed")
